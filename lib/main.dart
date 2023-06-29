@@ -1,4 +1,6 @@
+import 'package:congresso_terciarios/view/qr_scanner.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 void main() {
   runApp(const MyApp());
@@ -10,15 +12,19 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
         title: 'Congresso Terciarios',
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: const Scaffold(
+        home: Scaffold(
           body: Center(
-            child: Text("Congresso Terciarios"),
-          ),
+              child: ElevatedButton(
+                onPressed: () {
+                  Get.to(() => QRScanner());
+                },
+                child: const Text("Scan QR"),
+              )),
         ));
   }
 }
