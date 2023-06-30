@@ -1,4 +1,6 @@
-import 'package:congresso_terciarios/view/qr_scanner.dart';
+import 'package:congresso_terciarios/service/google_sheets_service.dart';
+import 'package:congresso_terciarios/service/storage_service.dart';
+import 'package:congresso_terciarios/view/qr_scanner_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -19,12 +21,30 @@ class MyApp extends StatelessWidget {
         ),
         home: Scaffold(
           body: Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  Get.to(() => QRScanner());
-                },
-                child: const Text("Scan QR"),
-              )),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    Get.to(() => QrScannerView());
+                  },
+                  child: const Text("Scan QR"),
+                ),
+                ElevatedButton(
+                    onPressed: () async {
+                      GoogleSheetsService service = await GoogleSheetsService().init();
+                      await service.getAllData();
+                    },
+                    child: const Text("Read Data Clout")),
+                ElevatedButton(
+                    onPressed: () async {
+                      StorageService.readUsers("db");
+                      StorageService.readEvent("db");
+                    },
+                    child: const Text("Read Data Storage")),
+              ],
+            ),
+          ),
         ));
   }
 }

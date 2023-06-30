@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-class QRScanner extends StatelessWidget {
-  QRScanner({super.key});
+class QrScannerView extends StatelessWidget {
+  QrScannerView({super.key});
 
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
