@@ -1,3 +1,4 @@
+import 'package:congresso_terciarios/component/button_sheet_qr_component.dart';
 import 'package:congresso_terciarios/state/event_state.dart';
 import 'package:congresso_terciarios/state/user_state.dart';
 import 'package:flutter/material.dart';
@@ -14,22 +15,38 @@ class QrScannerView extends StatelessWidget {
 
   QRViewController? controller;
 
-  void _onQRViewCreated(QRViewController controller) {
-    controller.resumeCamera();
-    this.controller = controller;
-    controller.scannedDataStream.listen((scanData) {
-      var idUser = scanData.code?.substring(0, scanData.code!.length - 1).replaceAll("http://", "");
-      var user = userState.getUserById(idUser!);
-      if (user != null) {
-        eventState.saveParticipation(user.id);
-        Get.back();
-      }
-      controller.stopCamera();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
+    void _onQRViewCreated(QRViewController controller) {
+      controller.resumeCamera();
+      this.controller = controller;
+      controller.scannedDataStream.listen((scanData) {
+        controller.stopCamera();
+        var idUser =
+            scanData.code?.substring(0, scanData.code!.length - 1).replaceAll("http://", "");
+        var user = userState.getUserById(idUser!);
+        if (user != null) {
+          eventState.saveParticipation(user.id);
+          showModalBottomSheet(
+              context: context,
+              builder: (context) => ButtonSheetQrDataComponent(
+                    user: user,
+                  )).whenComplete(() {
+            controller.stopCamera();
+            Get.back();
+          });
+        } else {
+          showModalBottomSheet(
+              context: context,
+              builder: (context) => ButtonSheetQrErrorComponent()).whenComplete(() {
+            controller.stopCamera();
+            Get.back();
+          });
+        }
+        controller.stopCamera();
+      });
+    }
+
     return Scaffold(
         body: QRView(
           key: qrKey,
