@@ -3,6 +3,8 @@ import 'package:congresso_terciarios/dto/event_dto.dart';
 import 'package:congresso_terciarios/dto/user_dto.dart';
 import 'package:congresso_terciarios/service/google_sheets_service.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
+import 'package:congresso_terciarios/state/event_state.dart';
+import 'package:congresso_terciarios/view/home_view.dart';
 import 'package:congresso_terciarios/view/qr_scanner_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -18,18 +20,16 @@ void main() async {
   Get.put(StorageService());
   Get.put(await GoogleSheetsService().init());
 
+  Get.put(EventState());
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    GoogleSheetsService googleSheetsService = Get.find();
-    StorageService storageService = Get.find();
-
     return GetMaterialApp(
         title: 'Congresso Terciarios',
         theme: ThemeData(
@@ -37,30 +37,7 @@ class MyApp extends StatelessWidget {
         ),
         home: Scaffold(
           appBar: AppBarComponent(),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    Get.to(() => QrScannerView());
-                  },
-                  child: const Text("Scan QR"),
-                ),
-                ElevatedButton(
-                    onPressed: () async {
-                      await googleSheetsService.getAllData();
-                    },
-                    child: const Text("Read Data Clout")),
-                ElevatedButton(
-                    onPressed: () async {
-                      // storageService.readUsers("db");
-                      print(storageService.readEvent("db"));
-                    },
-                    child: const Text("Read Data Storage")),
-              ],
-            ),
-          ),
+          body: const HomeView(),
         ));
   }
 }

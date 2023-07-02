@@ -25,13 +25,22 @@ class GoogleSheetsService {
 }
   ''';
   final _idSheets = "1nOYzaHD0kAqN_7gI4McZagyDvmt52ugbxfIqbouCWZ0";
-  final _gsheets = GSheets(_credentials);
+  final _gSheets = GSheets(_credentials);
+
+  var _isConnect = false;
 
   Worksheet? _worksheet;
 
   Future<GoogleSheetsService> init() async {
-    final allshet = await _gsheets.spreadsheet(_idSheets);
-    _worksheet = allshet.worksheetByIndex(0);
+    // TODO ver cuando no hay conexión
+    if (_isConnect) {
+      try {
+        final allshet = await _gSheets.spreadsheet(_idSheets);
+        _worksheet = allshet.worksheetByIndex(0);
+      } catch (e) {
+        print(e);
+      }
+    }
     return this;
   }
 
@@ -40,8 +49,6 @@ class GoogleSheetsService {
     final events = EventMapper.fromListToMap(allRows.first.sublist(6));
     final users = UserMapper.fromRowListToMap(allRows.sublist(1));
     await _storageService.saveUsers("db", users);
-    print("users saved");
     await _storageService.saveEvents("db", events);
-    print("events saved");
   }
 }

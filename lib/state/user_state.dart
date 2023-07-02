@@ -1,0 +1,32 @@
+import 'package:congresso_terciarios/mapper/user_mapper.dart';
+import 'package:congresso_terciarios/service/google_sheets_service.dart';
+import 'package:congresso_terciarios/service/storage_service.dart';
+import 'package:congresso_terciarios/state/event_state.dart';
+import 'package:get/get.dart';
+
+import '../dto/user_dto.dart';
+
+class UserState extends GetxController {
+  final StorageService _storageService = Get.find();
+  final GoogleSheetsService _googleSheetsService = Get.find();
+
+  final RxList<UserDto?> _users = RxList<UserDto>();
+
+  @override
+  void onInit() async {
+    super.onInit();
+    var users = _storageService.readUsers("db");
+    if (users == null) {
+      await _googleSheetsService.getAllData();
+      users = _storageService.readUsers("db");
+    }
+    _users.value = UserMapper.fromMapToList(users!);
+  }
+
+  List<List> get users => _users
+      .map((element) => [
+            element!.id,
+            element.name,
+          ])
+      .toList();
+}

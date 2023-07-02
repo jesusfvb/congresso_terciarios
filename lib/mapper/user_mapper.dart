@@ -8,4 +8,8 @@ class UserMapper {
     }
     return users;
   }
+
+  static List<UserDto> fromMapToList(Map<String, UserDto> users) {
+    return users.values.toList();
+  }
 }

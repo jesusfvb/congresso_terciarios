@@ -4,7 +4,7 @@ import 'package:congresso_terciarios/service/google_sheets_service.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
 import 'package:get/get.dart';
 
-class DropdownState extends GetxController {
+class EventState extends GetxController {
   final StorageService _storageService = Get.find();
   final GoogleSheetsService _googleSheetsService = Get.find();
 
@@ -16,8 +16,8 @@ class DropdownState extends GetxController {
     super.onInit();
     var events = _storageService.readEvents("db");
     if (events == null) {
-      events = await _googleSheetsService.getAllData();
-      _storageService.readEvents("db");
+      await _googleSheetsService.getAllData();
+      events = _storageService.readEvents("db");
     }
     _events.value = EventMapper.fromMapToList(events!);
     _selectedEvent.value = _storageService.readEvent("db");
@@ -32,4 +32,8 @@ class DropdownState extends GetxController {
   List<String> get events => _events.map((event) => event.name).toList();
 
   String? get selectedEvent => _selectedEvent.value?.name;
+
+  EventDto get selectedEventDto => _selectedEvent.value!;
+
+  bool isInEventSelected(String userId) => _selectedEvent.value!.users.contains(userId);
 }

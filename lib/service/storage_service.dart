@@ -13,11 +13,8 @@ class StorageService {
     await _box.put("${key}_user", users);
   }
 
-  void readUsers(String key) {
-    // var users = _box.get<Map<String, UserDto>>("${key}_user") ;
-    var users = _box.get("${key}_user");
-    // TODO: print users
-    print(users);
+  Map<String, UserDto>? readUsers(String key) {
+    return _box.get("${key}_user")?.cast<String, UserDto>();
   }
 
   Future saveEvents(String key, Map<String, EventDto> event) async {
@@ -25,7 +22,6 @@ class StorageService {
   }
 
   Map<String, EventDto>? readEvents(String key) {
-    // return _box.get<Map<String, EventDto>>("${key}_event");
     return _box.get("${key}_events")?.cast<String, EventDto>();
   }
 

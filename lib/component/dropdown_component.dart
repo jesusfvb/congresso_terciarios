@@ -1,4 +1,4 @@
-import 'package:congresso_terciarios/state/dropdown_state.dart';
+import 'package:congresso_terciarios/state/event_state.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -7,19 +7,18 @@ class DropdownComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final DropdownState state = Get.put(DropdownState());
+    final EventState state = Get.find();
 
     return Obx(
       () => Expanded(
         child: Container(
-          height: 50,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: Colors.blue, width: 2),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          margin: const EdgeInsets.only(right: 20),
+          margin: const EdgeInsets.only(left: 2, right: 15),
           child: DropdownButtonHideUnderline(
             child: DropdownButtonFormField(
                 decoration: InputDecoration(
