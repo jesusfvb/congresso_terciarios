@@ -23,10 +23,22 @@ class EventState extends GetxController {
     _selectedEvent.value = _storageService.readEvent("db");
   }
 
-  void setEvents(String events) {
+  void setSelectedEvents(String events) {
     var event = _events.firstWhere((event) => event.name == events);
     _storageService.saveEvent("db", event);
     _selectedEvent.value = event;
+  }
+
+  void saveParticipation(String idUser) {
+    var selectedEvent = _selectedEvent.value!;
+    selectedEvent.users.add(idUser);
+    _selectedEvent.value = selectedEvent;
+    _storageService.saveEvent("db", selectedEvent);
+
+    var events = _events.value!;
+    events.firstWhere((element) => element.name == selectedEvent.name).users.add(idUser);
+    _events.value = events;
+    _storageService.saveEvents("db", EventMapper.fromListToMap(events.map((e) => e.name).toList()));
   }
 
   List<String> get events => _events.map((event) => event.name).toList();

@@ -33,7 +33,7 @@ class DropdownComponent extends StatelessWidget {
                   );
                 }).toList(),
                 onChanged: (value) {
-                  state.setEvents(value!);
+                  state.setSelectedEvents(value!);
                 }),
           ),
         ),

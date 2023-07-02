@@ -1,9 +1,14 @@
+import 'package:congresso_terciarios/state/event_state.dart';
+import 'package:congresso_terciarios/state/user_state.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 class QrScannerView extends StatelessWidget {
   QrScannerView({super.key});
+
+  final EventState eventState = Get.find();
+  final UserState userState = Get.find();
 
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
@@ -13,9 +18,13 @@ class QrScannerView extends StatelessWidget {
     controller.resumeCamera();
     this.controller = controller;
     controller.scannedDataStream.listen((scanData) {
-      print("************************************************************");
-      print(scanData.code?.substring(0, scanData.code!.length - 1).replaceAll("http://", ""));
-      print("************************************************************");
+      var idUser = scanData.code?.substring(0, scanData.code!.length - 1).replaceAll("http://", "");
+      var user = userState.getUserById(idUser!);
+      print(user);
+      if (user != null) {
+        eventState.saveParticipation(user.id);
+        Get.back();
+      }
       controller.stopCamera();
     });
   }

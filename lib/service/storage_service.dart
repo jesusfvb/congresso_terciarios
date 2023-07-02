@@ -1,7 +1,5 @@
 import 'package:congresso_terciarios/dto/event_dto.dart';
 import 'package:congresso_terciarios/dto/user_dto.dart';
-import 'package:congresso_terciarios/mapper/event_mapper.dart';
-import 'package:congresso_terciarios/mapper/user_mapper.dart';
 import 'package:hive/hive.dart';
 
 class StorageService {

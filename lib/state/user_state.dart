@@ -1,7 +1,6 @@
 import 'package:congresso_terciarios/mapper/user_mapper.dart';
 import 'package:congresso_terciarios/service/google_sheets_service.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
-import 'package:congresso_terciarios/state/event_state.dart';
 import 'package:get/get.dart';
 
 import '../dto/user_dto.dart';
@@ -21,6 +20,10 @@ class UserState extends GetxController {
       users = _storageService.readUsers("db");
     }
     _users.value = UserMapper.fromMapToList(users!);
+  }
+
+  UserDto? getUserById(String id) {
+    return _users.firstWhere((element) => element!.id == id);
   }
 
   List<List> get users => _users
