@@ -1,10 +1,13 @@
 import 'package:congresso_terciarios/mapper/user_mapper.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
+import 'package:get/get.dart';
 import 'package:gsheets/gsheets.dart';
 
 import '../mapper/event_mapper.dart';
 
 class GoogleSheetsService {
+  final StorageService _storageService = Get.find();
+
   // email = congresso-terciarios@congressoterciarios.iam.gserviceaccount.com
   static const _credentials = r'''
   {
@@ -34,11 +37,11 @@ class GoogleSheetsService {
 
   Future getAllData() async {
     final allRows = await _worksheet!.values.allRows();
-    final events = EventMapper.fromList(allRows.first.sublist(6));
+    final events = EventMapper.fromListToMap(allRows.first.sublist(6));
     final users = UserMapper.fromRowListToMap(allRows.sublist(1));
-    StorageService.saveUsers("db", users);
+    await _storageService.saveUsers("db", users);
     print("users saved");
-    StorageService.saveEvent("db", events);
+    await _storageService.saveEvents("db", events);
     print("events saved");
   }
 }
