@@ -8,16 +8,4 @@ class EventMapper {
     }
     return exit;
   }
-
-  static List<EventDto> fromMapToList(Map<String, EventDto> events) {
-    List<EventDto> exit = [];
-    events.forEach((key, value) {
-      exit.add(value);
-    });
-    return exit;
-  }
-
-  static EventDto fromJsonToEventDto(Map<String, dynamic> json) {
-    return EventDto(json['name'], json['users']);
-  }
 }

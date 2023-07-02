@@ -20,7 +20,6 @@ class QrScannerView extends StatelessWidget {
     controller.scannedDataStream.listen((scanData) {
       var idUser = scanData.code?.substring(0, scanData.code!.length - 1).replaceAll("http://", "");
       var user = userState.getUserById(idUser!);
-      print(user);
       if (user != null) {
         eventState.saveParticipation(user.id);
         Get.back();
