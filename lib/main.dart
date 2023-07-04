@@ -18,8 +18,6 @@ void main() async {
   Get.put(StorageService());
   Get.put(await GoogleSheetsService().init());
 
-  Get.put(EventState());
-
   runApp(const MyApp());
 }
 
@@ -28,6 +26,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final googleSheetsService = Get.find<GoogleSheetsService>();
+
+    googleSheetsService.getAllData();
+
     return GetMaterialApp(
       title: 'Congresso Terciarios',
       theme: ThemeData(

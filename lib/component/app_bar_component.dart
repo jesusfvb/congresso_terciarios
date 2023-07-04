@@ -10,9 +10,6 @@ import '../state/event_state.dart';
 class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
   final GoogleSheetsService _googleSheetsService = Get.find();
 
-  final EventState _eventState = Get.put(EventState());
-  final UserState _userState = Get.put(UserState());
-
   AppBarComponent({super.key});
 
   static Container _icon({required IconData icon, VoidCallback? onPressed}) => Container(
@@ -39,11 +36,7 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
         _icon(
             icon: Icons.sync,
             onPressed: () async {
-              var update = await _googleSheetsService.update();
-              if (update) {
-                _userState.refresh();
-                _eventState.refresh();
-              }
+              await _googleSheetsService.update();
             }),
       ],
       backgroundColor: Colors.white,

@@ -1,5 +1,7 @@
 import 'package:congresso_terciarios/mapper/user_mapper.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
+import 'package:congresso_terciarios/state/event_state.dart';
+import 'package:congresso_terciarios/state/user_state.dart';
 import 'package:get/get.dart';
 import 'package:gsheets/gsheets.dart';
 
@@ -7,6 +9,8 @@ import '../mapper/event_mapper.dart';
 
 class GoogleSheetsService {
   final StorageService _storageService = Get.find();
+  final UserState _userState = Get.put(UserState());
+  final EventState _eventState = Get.put(EventState());
 
   // email = congresso-terciarios@congressoterciarios.iam.gserviceaccount.com
   static const _credentials = r'''
@@ -30,56 +34,80 @@ class GoogleSheetsService {
   Worksheet? _worksheet;
 
   Future<GoogleSheetsService> init() async {
-    try {
-      final allshet = await _gSheets.spreadsheet(_idSheets);
-      _worksheet = allshet.worksheetByIndex(0);
-    } catch (e) {}
-
+    await _init();
     return this;
   }
 
   Future<bool> getAllData() async {
-    if (_worksheet == null) {
-      init();
-      if (_worksheet == null) {
-        return false;
-      }
+    if (!await _init()) {
+      return false;
     }
-    final allRows = await _worksheet!.values.allRows();
-    final eventList = allRows.first.sublist(6);
-    final events = EventMapper.fromListToMap(eventList);
-    final usersList = allRows.sublist(1);
-    final users = UserMapper.fromRowListToMap(usersList);
+    try {
+      final allRows = await _worksheet!.values.allRows();
+      final eventList = allRows.first.sublist(6);
+      final events = EventMapper.fromListToMap(eventList);
+      final usersList = allRows.sublist(1);
+      final users = UserMapper.fromRowListToMap(usersList);
 
-    for (var user in usersList) {
-      String id = user[3];
-      var assistance = user.sublist(6);
-      var cont = 0;
-      for (var check in assistance) {
-        if (check == "X" || check == "x") {
-          events[eventList[cont]]?.users.add(id);
+      for (var user in usersList) {
+        String id = user[3];
+        var assistance = user.sublist(6);
+        var cont = 0;
+        for (var check in assistance) {
+          if (check == "X" || check == "x") {
+            events[eventList[cont]]?.users.add(id);
+          }
+          cont++;
         }
-        cont++;
       }
-    }
 
-    await _storageService.saveUsers("db", users);
-    await _storageService.saveEvents("db", events);
-    return true;
+      await _storageService.saveUsers("db", users);
+      _userState.refresh();
+      await _storageService.saveEvents("db", events);
+      _eventState.refresh();
+      return true;
+    } catch (e) {
+      print("Error de connexion 2");
+      return false;
+    }
   }
 
   Future<bool> update() async {
-    if (_worksheet != null) {
-      var events = _storageService.readEvents("db");
-      if (events == null) return false;
-      events.values.forEach((event) async {
-        var indexColumn = await _worksheet?.values.columnIndexOf(event.name);
-        event.users.forEach((user) async {
-          var indexRow = await _worksheet?.values.rowIndexOf(user, inColumn: 4);
-          _worksheet?.values.insertValue("X", column: indexColumn!, row: indexRow!);
-        });
-      });
+    if (!await _init()) {
+      return false;
     }
-    return await getAllData();
+    try {
+      var events = _storageService.readEvents("db");
+      if (events != null) {
+        for (var event in events.values) {
+          try {
+            var indexColumn = await _worksheet?.values.columnIndexOf(event.name);
+            for (var user in event.users) {
+              var indexRow = await _worksheet?.values.rowIndexOf(user, inColumn: 4);
+              _worksheet?.values.insertValue("X", column: indexColumn!, row: indexRow!);
+            }
+          } catch (e) {
+            print("Error de connexion 4");
+            return false;
+          }
+        }
+      }
+      return await getAllData();
+    } catch (e) {
+      print("Error de connexion 3");
+      return false;
+    }
+  }
+
+  Future<bool> _init() async {
+    if (_worksheet != null) return true;
+    try {
+      final allshet = await _gSheets.spreadsheet(_idSheets);
+      _worksheet = allshet.worksheetByIndex(0);
+      return true;
+    } catch (e) {
+      print("Error connexion 1");
+      return false;
+    }
   }
 }

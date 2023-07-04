@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 
 class EventState extends GetxController {
   final StorageService _storageService = Get.find();
-  final GoogleSheetsService _googleSheetsService = Get.find();
 
   final RxMap<String, EventDto> _events = RxMap({});
   final Rx<EventDto?> _selectedEvent = Rx<EventDto?>(null);
@@ -13,16 +12,8 @@ class EventState extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    var events = _storageService.readEvents("db");
-    if (events == null) {
-      await _googleSheetsService.getAllData();
-      events = _storageService.readEvents("db");
-      _events.value = events!;
-      _selectedEvent.value = _storageService.readEvent("db");
-    } else {
-      _events.value = events!;
-      _selectedEvent.value = _storageService.readEvent("db");
-    }
+    _events.value = _storageService.readEvents("db") ?? {};
+    _selectedEvent.value = _storageService.readEvent("db");
   }
 
   @override
@@ -39,7 +30,7 @@ class EventState extends GetxController {
   void saveParticipation(String idUser) {
     var event = _selectedEvent.value;
     if (event!.users.contains(idUser) == false) {
-      event!.users.add(idUser);
+      event.users.add(idUser);
       _storageService.saveEvent("db", event);
       var events = _events.value;
       events[event.name] = event;

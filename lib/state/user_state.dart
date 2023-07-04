@@ -6,7 +6,6 @@ import '../dto/user_dto.dart';
 
 class UserState extends GetxController {
   final StorageService _storageService = Get.find();
-  final GoogleSheetsService _googleSheetsService = Get.find();
 
   final RxMap<String, UserDto> _users = RxMap({});
   final RxString filter = "".obs;
@@ -14,13 +13,7 @@ class UserState extends GetxController {
   @override
   void onInit() async {
     super.onInit();
-    var users = _storageService.readUsers("db");
-    if (users == null && await _googleSheetsService.getAllData()) {
-      users = _storageService.readUsers("db");
-      _users.value = users!;
-    } else {
-      _users.value = users!;
-    }
+    _users.value = _storageService.readUsers("db") ?? {};
   }
 
   @override
