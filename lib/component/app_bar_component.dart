@@ -5,12 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../service/google_sheets_service.dart';
-import '../service/storage_service.dart';
 import '../state/event_state.dart';
 
 class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
   final GoogleSheetsService _googleSheetsService = Get.find();
-  final StorageService _storageService = Get.find();
 
   final EventState _eventState = Get.put(EventState());
   final UserState _userState = Get.put(UserState());
@@ -18,7 +16,7 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
   AppBarComponent({super.key});
 
   static Container _icon({required IconData icon, VoidCallback? onPressed}) => Container(
-        margin: const EdgeInsets.only(right: 5),
+        margin: const EdgeInsets.only(right: 1),
         child: IconButton(
           onPressed: onPressed,
           icon: Icon(icon),
@@ -47,11 +45,6 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
                 _eventState.refresh();
               }
             }),
-        _icon(
-            icon: Icons.ac_unit,
-            onPressed: () {
-              _storageService.clear();
-            })
       ],
       backgroundColor: Colors.white,
       elevation: 0,

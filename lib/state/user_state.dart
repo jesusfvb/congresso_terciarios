@@ -9,6 +9,7 @@ class UserState extends GetxController {
   final GoogleSheetsService _googleSheetsService = Get.find();
 
   final RxMap<String, UserDto> _users = RxMap({});
+  final RxString filter = "".obs;
 
   @override
   void onInit() async {
@@ -31,5 +32,12 @@ class UserState extends GetxController {
     return _users.value[id];
   }
 
-  List<List> get users => _users.value.values.map((e) => [e.id, e.name]).toList();
+  void search(String value) {
+    filter.value = value;
+  }
+
+  List<List> get users => _users.value.values
+      .where((e) => e.name.contains(filter.value))
+      .map((e) => [e.id, e.name])
+      .toList();
 }
