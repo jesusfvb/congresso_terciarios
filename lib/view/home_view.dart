@@ -8,32 +8,31 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final UserState userState = Get.put(UserState());
-    final EventState eventState = Get.put(EventState());
-
-    var users = userState.users;
-
-    return Container(
-      margin: const EdgeInsets.all(15),
-      child: ListView.separated(
-        itemCount: users.length,
-        itemBuilder: (context, index) {
-          var user = users[index];
-
-          return Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-            Expanded(
-                child: Text(
-              user[1] as String,
-              style: const TextStyle(
-                fontSize: 20,
-              ),
-            )),
-            Obx(() =>
-                (eventState.isInEventSelected(user[0]) ? const Icon(Icons.check) : Container())),
-          ]);
-        },
-        separatorBuilder: (BuildContext context, int index) => const Divider(),
-      ),
-    );
+    final UserState userState = Get.find();
+    final EventState eventState = Get.find();
+    return Obx(() {
+      var users = userState.users;
+      return Container(
+        margin: const EdgeInsets.all(15),
+        child: ListView.separated(
+          itemCount: users.length,
+          itemBuilder: (context, index) {
+            var user = users[index];
+            return Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+              Expanded(
+                  child: Text(
+                user[1] as String,
+                style: const TextStyle(
+                  fontSize: 20,
+                ),
+              )),
+              Obx(() =>
+                  (eventState.isInEventSelected(user[0]) ? const Icon(Icons.check) : Container())),
+            ]);
+          },
+          separatorBuilder: (BuildContext context, int index) => const Divider(),
+        ),
+      );
+    });
   }
 }

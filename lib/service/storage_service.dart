@@ -7,6 +7,10 @@ class StorageService {
 
   StorageService();
 
+  void clear() {
+    _box.clear();
+  }
+
   Future saveUsers(String key, Map<String, UserDto> users) async {
     await _box.put("${key}_user", users);
   }

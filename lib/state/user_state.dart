@@ -14,11 +14,17 @@ class UserState extends GetxController {
   void onInit() async {
     super.onInit();
     var users = _storageService.readUsers("db");
-    if (users == null) {
-      await _googleSheetsService.getAllData();
+    if (users == null && await _googleSheetsService.getAllData()) {
       users = _storageService.readUsers("db");
+      _users.value = users!;
+    } else {
+      _users.value = users!;
     }
-    _users.value = users!;
+  }
+
+  @override
+  void refresh() {
+    onInit();
   }
 
   UserDto? getUserById(String id) {

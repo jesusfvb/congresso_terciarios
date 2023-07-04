@@ -17,9 +17,17 @@ class EventState extends GetxController {
     if (events == null) {
       await _googleSheetsService.getAllData();
       events = _storageService.readEvents("db");
+      _events.value = events!;
+      _selectedEvent.value = _storageService.readEvent("db");
+    } else {
+      _events.value = events!;
+      _selectedEvent.value = _storageService.readEvent("db");
     }
-    _events.value = events!;
-    _selectedEvent.value = _storageService.readEvent("db");
+  }
+
+  @override
+  void refresh() {
+    onInit();
   }
 
   void setSelectedEvents(String events) {
@@ -30,12 +38,14 @@ class EventState extends GetxController {
 
   void saveParticipation(String idUser) {
     var event = _selectedEvent.value;
-    event!.users.add(idUser);
-    _storageService.saveEvent("db", event);
-    var events = _events.value;
-    events[event.name] = event;
-    _storageService.saveEvents("db", events);
-    _selectedEvent.refresh();
+    if (event!.users.contains(idUser) == false) {
+      event!.users.add(idUser);
+      _storageService.saveEvent("db", event);
+      var events = _events.value;
+      events[event.name] = event;
+      _storageService.saveEvents("db", events);
+      _selectedEvent.refresh();
+    }
   }
 
   List<String> get events {
@@ -46,5 +56,5 @@ class EventState extends GetxController {
 
   EventDto get selectedEventDto => _selectedEvent.value!;
 
-  bool isInEventSelected(String userId) => _selectedEvent.value!.users.contains(userId);
+  bool isInEventSelected(String userId) => _selectedEvent.value?.users.contains(userId) ?? false;
 }

@@ -27,28 +27,59 @@ class GoogleSheetsService {
   final _idSheets = "1nOYzaHD0kAqN_7gI4McZagyDvmt52ugbxfIqbouCWZ0";
   final _gSheets = GSheets(_credentials);
 
-  var _isConnect = false;
-
   Worksheet? _worksheet;
 
   Future<GoogleSheetsService> init() async {
-    // TODO ver cuando no hay conexión
-    if (_isConnect) {
-      try {
-        final allshet = await _gSheets.spreadsheet(_idSheets);
-        _worksheet = allshet.worksheetByIndex(0);
-      } catch (e) {
-        print(e);
-      }
-    }
+    try {
+      final allshet = await _gSheets.spreadsheet(_idSheets);
+      _worksheet = allshet.worksheetByIndex(0);
+    } catch (e) {}
+
     return this;
   }
 
-  Future getAllData() async {
+  Future<bool> getAllData() async {
+    if (_worksheet == null) {
+      init();
+      if (_worksheet == null) {
+        return false;
+      }
+    }
     final allRows = await _worksheet!.values.allRows();
-    final events = EventMapper.fromListToMap(allRows.first.sublist(6));
-    final users = UserMapper.fromRowListToMap(allRows.sublist(1));
+    final eventList = allRows.first.sublist(6);
+    final events = EventMapper.fromListToMap(eventList);
+    final usersList = allRows.sublist(1);
+    final users = UserMapper.fromRowListToMap(usersList);
+
+    for (var user in usersList) {
+      String id = user[3];
+      var assistance = user.sublist(6);
+      var cont = 0;
+      for (var check in assistance) {
+        if (check == "X" || check == "x") {
+          events[eventList[cont]]?.users.add(id);
+        }
+        cont++;
+      }
+    }
+
     await _storageService.saveUsers("db", users);
     await _storageService.saveEvents("db", events);
+    return true;
+  }
+
+  Future<bool> update() async {
+    if (_worksheet != null) {
+      var events = _storageService.readEvents("db");
+      if (events == null) return false;
+      events.values.forEach((event) async {
+        var indexColumn = await _worksheet?.values.columnIndexOf(event.name);
+        event.users.forEach((user) async {
+          var indexRow = await _worksheet?.values.rowIndexOf(user, inColumn: 4);
+          _worksheet?.values.insertValue("X", column: indexColumn!, row: indexRow!);
+        });
+      });
+    }
+    return await getAllData();
   }
 }
