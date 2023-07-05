@@ -33,11 +33,6 @@ class GoogleSheetsService {
   final _gSheets = GSheets(_credentials);
 
   Worksheet? _worksheet;
-  BuildContext? _context;
-
-  set context(BuildContext context) {
-    _context = context;
-  }
 
   Future<GoogleSheetsService> init() async {
     await _init(message: false);
@@ -71,32 +66,9 @@ class GoogleSheetsService {
       _userState.refresh();
       await _storageService.saveEvents("db", events);
       _eventState.refresh();
-      if (message) {
-        showModalBottomSheet(
-                context: _context!,
-                builder: (context) {
-                  return const SizedBox(
-                      height: 50,
-                      child: Center(
-                          child: Text(
-                        "Datos actualizados",
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
-                        ),
-                      )));
-                },
-                barrierColor: Colors.transparent,
-                backgroundColor: Colors.green)
-            .timeout(0.5.seconds, onTimeout: () {
-          Get.back();
-        });
-      }
       return true;
     } catch (e) {
-      print(e);
       print("Error de connexion 2");
-      _showErrorConnection();
       return false;
     }
   }
@@ -116,14 +88,12 @@ class GoogleSheetsService {
                 var indexRow = await _worksheet?.values.rowIndexOf(user, inColumn: 4);
                 await _worksheet?.values.insertValue("X", column: indexColumn!, row: indexRow!);
               } catch (e) {
-                _showErrorConnection(text: "Error al actualizar los datos");
                 getAllData();
                 print("Error de connexion 5");
                 return false;
               }
             }
           } catch (e) {
-            _showErrorConnection();
             print("Error de connexion 4");
             return false;
           }
@@ -131,7 +101,6 @@ class GoogleSheetsService {
       }
       return await getAllData(message: true);
     } catch (e) {
-      _showErrorConnection();
       print("Error de connexion 3");
       return false;
     }
@@ -144,29 +113,8 @@ class GoogleSheetsService {
       _worksheet = allshet.worksheetByIndex(0);
       return true;
     } catch (e) {
-      if (message) _showErrorConnection();
       print("Error connexion 1");
       return false;
     }
   }
-
-  void _showErrorConnection({String? text}) => showModalBottomSheet(
-              context: _context!,
-              builder: (context) {
-                return SizedBox(
-                    height: 50,
-                    child: Center(
-                        child: Text(
-                      text ?? "Error de Connexion",
-                      style: const TextStyle(
-                        fontSize: 20,
-                        color: Colors.white,
-                      ),
-                    )));
-              },
-              barrierColor: Colors.transparent,
-              backgroundColor: Colors.red)
-          .timeout(0.5.seconds, onTimeout: () {
-        Get.back();
-      });
 }

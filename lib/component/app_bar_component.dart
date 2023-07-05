@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../service/google_sheets_service.dart';
+import '../service/notification_service.dart';
 
 class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
   final GoogleSheetsService _googleSheetsService = Get.find();
@@ -23,8 +24,6 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    _googleSheetsService.context = context;
-
     return AppBar(
       actions: [
         const DropdownComponent(),
@@ -36,7 +35,10 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
         _icon(
             icon: Icons.sync,
             onPressed: () async {
+              NotificationService.showLoadingDialog();
               await _googleSheetsService.update();
+              Get.back();
+              NotificationService.showErrorNetworkSnackbar();
             }),
       ],
       backgroundColor: Colors.white,
