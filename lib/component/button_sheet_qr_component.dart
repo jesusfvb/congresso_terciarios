@@ -1,4 +1,3 @@
-import 'package:audioplayers/audioplayers.dart';
 import 'package:congresso_terciarios/dto/user_dto.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

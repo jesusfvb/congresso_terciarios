@@ -2,7 +2,6 @@ import 'package:congresso_terciarios/mapper/user_mapper.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
 import 'package:congresso_terciarios/state/event_state.dart';
 import 'package:congresso_terciarios/state/user_state.dart';
-import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gsheets/gsheets.dart';
 
@@ -51,14 +50,17 @@ class GoogleSheetsService {
       final users = UserMapper.fromRowListToMap(usersList);
 
       for (var user in usersList) {
+        if (user.isEmpty) continue;
         String id = user[3];
-        var assistance = user.sublist(6);
-        var cont = 0;
-        for (var check in assistance) {
-          if (check == "X" || check == "x") {
-            events[eventList[cont]]?.users.add(id);
+        if (user.length > 5) {
+          var assistance = user.sublist(6);
+          var cont = 0;
+          for (var check in assistance) {
+            if (check == "X" || check == "x") {
+              events[eventList[cont]]?.users.add(id);
+            }
+            cont++;
           }
-          cont++;
         }
       }
 
@@ -68,7 +70,7 @@ class GoogleSheetsService {
       _eventState.refresh();
       return true;
     } catch (e) {
-      print("Error de connexion 2");
+      // print("Error de connexion 2");
       return false;
     }
   }
@@ -83,25 +85,27 @@ class GoogleSheetsService {
         for (var event in events.values) {
           try {
             var indexColumn = await _worksheet?.values.columnIndexOf(event.name);
+            if (indexColumn == null || indexColumn < 0) continue;
             for (var user in event.users) {
               try {
                 var indexRow = await _worksheet?.values.rowIndexOf(user, inColumn: 4);
-                await _worksheet?.values.insertValue("X", column: indexColumn!, row: indexRow!);
+                if (indexRow == null || indexRow < 0) continue;
+                await _worksheet?.values.insertValue("X", column: indexColumn, row: indexRow);
               } catch (e) {
                 getAllData();
-                print("Error de connexion 5");
+                // print("Error de connexion 5");
                 return false;
               }
             }
           } catch (e) {
-            print("Error de connexion 4");
+            // print("Error de connexion 4");
             return false;
           }
         }
       }
       return await getAllData(message: true);
     } catch (e) {
-      print("Error de connexion 3");
+      // print("Error de connexion 3");
       return false;
     }
   }
@@ -113,7 +117,7 @@ class GoogleSheetsService {
       _worksheet = allshet.worksheetByIndex(0);
       return true;
     } catch (e) {
-      print("Error connexion 1");
+      // print("Error connexion 1");
       return false;
     }
   }
