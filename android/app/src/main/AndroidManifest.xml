@@ -2,9 +2,9 @@
     package="com.example.congresso_terciarios">
     <uses-permission android:name="android.permission.INTERNET" />
    <application
-        android:label="congresso_terciarios"
+        android:label="Congresso Terciarios"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/congresso_terciarios">
         <activity
             android:name=".MainActivity"
             android:exported="true"
