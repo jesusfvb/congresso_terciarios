@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 
 class ButtonSheetQrDataComponent extends StatelessWidget {
   final UserDto? user;
-  final player = AudioPlayer();
 
   ButtonSheetQrDataComponent({Key? key, this.user}) : super(key: key);
 
@@ -28,7 +27,6 @@ class ButtonSheetQrDataComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    player.play(AssetSource("sound/correct.mp3"));
     return GestureDetector(
       onTap: () {
         Get.back();
@@ -73,11 +71,8 @@ class ButtonSheetQrDataComponent extends StatelessWidget {
 class ButtonSheetQrErrorComponent extends StatelessWidget {
   ButtonSheetQrErrorComponent({Key? key}) : super(key: key);
 
-  final player = AudioPlayer();
-
   @override
   Widget build(BuildContext context) {
-    player.play(AssetSource("sound/error.mp3"));
     return GestureDetector(
       onTap: () {
         Get.back();

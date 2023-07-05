@@ -94,6 +94,7 @@ class GoogleSheetsService {
       }
       return true;
     } catch (e) {
+      print(e);
       print("Error de connexion 2");
       _showErrorConnection();
       return false;

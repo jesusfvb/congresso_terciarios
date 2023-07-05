@@ -1,3 +1,4 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:congresso_terciarios/component/button_sheet_qr_component.dart';
 import 'package:congresso_terciarios/state/event_state.dart';
 import 'package:congresso_terciarios/state/user_state.dart';
@@ -11,6 +12,7 @@ class QrScannerView extends StatelessWidget {
   final EventState eventState = Get.find();
   final UserState userState = Get.find();
 
+  final player = AudioPlayer();
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
 
   QRViewController? controller;
@@ -20,27 +22,29 @@ class QrScannerView extends StatelessWidget {
     void _onQRViewCreated(QRViewController controller) {
       controller.resumeCamera();
       this.controller = controller;
-      controller.scannedDataStream.listen((scanData) {
+      controller.scannedDataStream.listen((scanData) async {
         controller.stopCamera();
         var idUser =
             scanData.code?.substring(0, scanData.code!.length - 1).replaceAll("http://", "");
         var user = userState.getUserById(idUser!);
         if (user != null) {
           eventState.saveParticipation(user.id);
-          showModalBottomSheet(
+          await player.play(AssetSource("sound/correct.mp3"));
+          await showModalBottomSheet(
               context: context,
               builder: (context) => ButtonSheetQrDataComponent(
                     user: user,
-                  )).whenComplete(() {
-            controller.stopCamera();
+                  )).timeout(2.seconds, onTimeout: () {
             Get.back();
+          }).whenComplete(() {
+            controller.resumeCamera();
           });
         } else {
-          showModalBottomSheet(
+          await player.play(AssetSource("sound/error.mp3"));
+          await showModalBottomSheet(
               context: context,
               builder: (context) => ButtonSheetQrErrorComponent()).whenComplete(() {
-            controller.stopCamera();
-            Get.back();
+            controller.resumeCamera();
           });
         }
         controller.stopCamera();
