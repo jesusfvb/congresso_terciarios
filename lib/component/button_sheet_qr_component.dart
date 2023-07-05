@@ -91,7 +91,7 @@ class ButtonSheetQrErrorComponent extends StatelessWidget {
             Container(
               margin: const EdgeInsets.only(top: 10),
               child: const Text(
-                "Usuario No Encontrado",
+                "Acceso Denegado",
                 style: TextStyle(color: Colors.redAccent, fontSize: 30),
               ),
             ),
