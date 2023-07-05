@@ -1,11 +1,9 @@
 import 'package:congresso_terciarios/component/dropdown_component.dart';
-import 'package:congresso_terciarios/state/user_state.dart';
 import 'package:congresso_terciarios/view/qr_scanner_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../service/google_sheets_service.dart';
-import '../state/event_state.dart';
 
 class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
   final GoogleSheetsService _googleSheetsService = Get.find();
@@ -25,6 +23,8 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+    _googleSheetsService.context = context;
+
     return AppBar(
       actions: [
         const DropdownComponent(),

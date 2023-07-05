@@ -44,11 +44,11 @@ class ButtonSheetQrDataComponent extends StatelessWidget {
               children: const [
                 Text(
                   "Presencia confirmada",
-                  style: TextStyle(color: Colors.lightBlue, fontSize: 30),
+                  style: TextStyle(color: Colors.greenAccent, fontSize: 30),
                 ),
                 Icon(
                   Icons.check,
-                  color: Colors.lightBlue,
+                  color: Colors.greenAccent,
                   size: 50,
                 ),
               ],

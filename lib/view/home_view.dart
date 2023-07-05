@@ -40,7 +40,7 @@ class HomeView extends StatelessWidget {
           child: Obx(() {
             var users = userState.users;
             return Container(
-              margin: const EdgeInsets.all(15),
+              margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
               child: ListView.separated(
                 itemCount: users.length,
                 itemBuilder: (context, index) {

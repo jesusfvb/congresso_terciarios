@@ -30,7 +30,7 @@ class UserState extends GetxController {
   }
 
   List<List> get users => _users.value.values
-      .where((e) => e.name.contains(filter.value))
+      .where((e) => e.name.toLowerCase().contains(filter.value.toLowerCase()))
       .map((e) => [e.id, e.name])
       .toList();
 }

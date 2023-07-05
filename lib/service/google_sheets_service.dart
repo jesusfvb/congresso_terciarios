@@ -2,6 +2,7 @@ import 'package:congresso_terciarios/mapper/user_mapper.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
 import 'package:congresso_terciarios/state/event_state.dart';
 import 'package:congresso_terciarios/state/user_state.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:gsheets/gsheets.dart';
 
@@ -32,13 +33,18 @@ class GoogleSheetsService {
   final _gSheets = GSheets(_credentials);
 
   Worksheet? _worksheet;
+  BuildContext? _context;
+
+  set context(BuildContext context) {
+    _context = context;
+  }
 
   Future<GoogleSheetsService> init() async {
-    await _init();
+    await _init(message: false);
     return this;
   }
 
-  Future<bool> getAllData() async {
+  Future<bool> getAllData({bool message = false}) async {
     if (!await _init()) {
       return false;
     }
@@ -65,9 +71,31 @@ class GoogleSheetsService {
       _userState.refresh();
       await _storageService.saveEvents("db", events);
       _eventState.refresh();
+      if (message) {
+        showModalBottomSheet(
+                context: _context!,
+                builder: (context) {
+                  return const SizedBox(
+                      height: 50,
+                      child: Center(
+                          child: Text(
+                        "Datos actualizados",
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: Colors.white,
+                        ),
+                      )));
+                },
+                barrierColor: Colors.transparent,
+                backgroundColor: Colors.green)
+            .timeout(0.5.seconds, onTimeout: () {
+          Get.back();
+        });
+      }
       return true;
     } catch (e) {
       print("Error de connexion 2");
+      _showErrorConnection();
       return false;
     }
   }
@@ -83,31 +111,61 @@ class GoogleSheetsService {
           try {
             var indexColumn = await _worksheet?.values.columnIndexOf(event.name);
             for (var user in event.users) {
-              var indexRow = await _worksheet?.values.rowIndexOf(user, inColumn: 4);
-              _worksheet?.values.insertValue("X", column: indexColumn!, row: indexRow!);
+              try {
+                var indexRow = await _worksheet?.values.rowIndexOf(user, inColumn: 4);
+                await _worksheet?.values.insertValue("X", column: indexColumn!, row: indexRow!);
+              } catch (e) {
+                _showErrorConnection(text: "Error al actualizar los datos");
+                getAllData();
+                print("Error de connexion 5");
+                return false;
+              }
             }
           } catch (e) {
+            _showErrorConnection();
             print("Error de connexion 4");
             return false;
           }
         }
       }
-      return await getAllData();
+      return await getAllData(message: true);
     } catch (e) {
+      _showErrorConnection();
       print("Error de connexion 3");
       return false;
     }
   }
 
-  Future<bool> _init() async {
+  Future<bool> _init({message = true}) async {
     if (_worksheet != null) return true;
     try {
       final allshet = await _gSheets.spreadsheet(_idSheets);
       _worksheet = allshet.worksheetByIndex(0);
       return true;
     } catch (e) {
+      if (message) _showErrorConnection();
       print("Error connexion 1");
       return false;
     }
   }
+
+  void _showErrorConnection({String? text}) => showModalBottomSheet(
+              context: _context!,
+              builder: (context) {
+                return SizedBox(
+                    height: 50,
+                    child: Center(
+                        child: Text(
+                      text ?? "Error de Connexion",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    )));
+              },
+              barrierColor: Colors.transparent,
+              backgroundColor: Colors.red)
+          .timeout(0.5.seconds, onTimeout: () {
+        Get.back();
+      });
 }

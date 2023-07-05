@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final googleSheetsService = Get.find<GoogleSheetsService>();
 
+    googleSheetsService.context = context;
     googleSheetsService.getAllData();
 
     return GetMaterialApp(

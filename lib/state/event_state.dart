@@ -13,7 +13,12 @@ class EventState extends GetxController {
   void onInit() async {
     super.onInit();
     _events.value = _storageService.readEvents("db") ?? {};
-    _selectedEvent.value = _storageService.readEvent("db");
+    var eventSelected = _storageService.readEvent("db");
+    if (_events.value.containsKey(eventSelected?.name)) {
+      _selectedEvent.value = eventSelected;
+    } else {
+      _selectedEvent.value = null;
+    }
   }
 
   @override
