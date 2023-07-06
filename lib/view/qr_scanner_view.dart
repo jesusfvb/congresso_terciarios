@@ -24,9 +24,8 @@ class QrScannerView extends StatelessWidget {
       this.controller = controller;
       controller.scannedDataStream.listen((scanData) async {
         controller.stopCamera();
-        var idUser =
-            scanData.code?.substring(0, scanData.code!.length - 1).replaceAll("http://", "");
-        var user = userState.getUserById(idUser!);
+        var user = userState.getUserById(_getIdUser(scanData.code));
+        print(user);
         if (user != null) {
           eventState.saveParticipation(user.id);
           await player.play(AssetSource("sound/correct.mp3"));
@@ -87,5 +86,19 @@ class QrScannerView extends StatelessWidget {
             ],
           ),
         ));
+  }
+
+  String _getIdUser(String? qrData) {
+    if (qrData == null) return "";
+    if (qrData.startsWith("http://")) {
+      qrData = qrData.replaceAll("http://", "");
+    }
+    if (qrData.startsWith("https://")) {
+      qrData = qrData.replaceAll("https://", "");
+    }
+    if (qrData.endsWith("/")) {
+      qrData = qrData.replaceAll("/", "");
+    }
+    return qrData.removeAllWhitespace;
   }
 }
