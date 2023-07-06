@@ -5,16 +5,19 @@ import 'package:get/get.dart';
 
 import '../service/google_sheets_service.dart';
 import '../service/notification_service.dart';
+import '../state/event_state.dart';
 
 class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
   final GoogleSheetsService _googleSheetsService = Get.find();
+  final EventState eventState = Get.find();
 
   AppBarComponent({super.key});
 
-  static Container _icon({required IconData icon, VoidCallback? onPressed}) => Container(
+  static Container _icon({required IconData icon, VoidCallback? onPressed, bool disable = false}) =>
+      Container(
         margin: const EdgeInsets.only(right: 1),
         child: IconButton(
-          onPressed: onPressed,
+          onPressed: !disable ? onPressed : null,
           icon: Icon(icon),
           color: Colors.blue,
           iconSize: 30,
@@ -27,11 +30,14 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       actions: [
         const DropdownComponent(),
-        _icon(
-            icon: Icons.qr_code_scanner,
-            onPressed: () {
-              Get.to(QrScannerView());
-            }),
+        Obx(
+          () => _icon(
+              disable: eventState.selectedEvent == null,
+              icon: Icons.qr_code_scanner,
+              onPressed: () {
+                Get.to(QrScannerView());
+              }),
+        ),
         _icon(
             icon: Icons.sync,
             onPressed: () async {
