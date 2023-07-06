@@ -1,3 +1,4 @@
+import 'package:congresso_terciarios/component/button_sheet_home_component.dart';
 import 'package:congresso_terciarios/state/event_state.dart';
 import 'package:congresso_terciarios/state/user_state.dart';
 import 'package:flutter/material.dart';
@@ -45,18 +46,26 @@ class HomeView extends StatelessWidget {
                 itemCount: users.length,
                 itemBuilder: (context, index) {
                   var user = users[index];
-                  return Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                    Expanded(
-                        child: Text(
-                      user[1] as String,
-                      style: const TextStyle(
-                        fontSize: 20,
-                      ),
-                    )),
-                    Obx(() => (eventState.isInEventSelected(user[0])
-                        ? const Icon(Icons.check)
-                        : Container())),
-                  ]);
+                  return GestureDetector(
+                    onTap: () {
+                      showModalBottomSheet(
+                          context: context,
+                          builder: (context) =>
+                              ButtonSheetHomeComponent(user: userState.getUserById(user[0])));
+                    },
+                    child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
+                      Expanded(
+                          child: Text(
+                        user[1] as String,
+                        style: const TextStyle(
+                          fontSize: 20,
+                        ),
+                      )),
+                      Obx(() => (eventState.isInEventSelected(user[0])
+                          ? const Icon(Icons.check)
+                          : Container())),
+                    ]),
+                  );
                 },
                 separatorBuilder: (BuildContext context, int index) => const Divider(),
               ),

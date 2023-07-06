@@ -54,7 +54,13 @@ class ButtonSheetQrDataComponent extends StatelessWidget {
               color: Colors.lightBlue,
               thickness: 2,
             ),
-            listElement("Nombre:", user!.name),
+            Container(
+              margin: const EdgeInsets.all(10),
+              child: Align(
+                  alignment: Alignment.centerLeft,
+                  child:
+                      Text(user!.name, style: const TextStyle(color: Colors.white, fontSize: 25))),
+            ),
             listElement("Turn:", user!.turn),
             listElement("Language:", user!.language),
             listElement("Status:", user!.status),
