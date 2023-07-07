@@ -1,4 +1,8 @@
 import 'package:congresso_terciarios/component/dropdown_component.dart';
+import 'package:congresso_terciarios/component/icon_component.dart';
+import 'package:congresso_terciarios/component/icon_component.dart';
+import 'package:congresso_terciarios/component/icon_component.dart';
+import 'package:congresso_terciarios/view/about_view.dart';
 import 'package:congresso_terciarios/view/qr_scanner_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -13,38 +17,46 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
 
   AppBarComponent({super.key});
 
-  static Container _icon({required IconData icon, VoidCallback? onPressed, bool disable = false}) =>
-      Container(
-        margin: const EdgeInsets.only(right: 1),
-        child: IconButton(
-          onPressed: !disable ? onPressed : null,
-          icon: Icon(icon),
-          color: Colors.blue,
-          iconSize: 30,
-          splashRadius: 30,
-        ),
-      );
-
   @override
   Widget build(BuildContext context) {
     return AppBar(
       actions: [
         const DropdownComponent(),
         Obx(
-          () => _icon(
+          () => IconComponent.iconAppBar(
               disable: eventState.selectedEvent == null,
               icon: Icons.qr_code_scanner,
               onPressed: () {
                 Get.to(QrScannerView());
               }),
         ),
-        _icon(
+        IconComponent.iconAppBar(
             icon: Icons.sync,
             onPressed: () async {
               NotificationService.showLoadingDialog();
               var isError = await _googleSheetsService.update();
               Get.back();
               if (!isError) NotificationService.showErrorNetworkSnackbar();
+            }),
+        IconComponent.iconAppBar(
+            icon: Icons.more_vert_rounded,
+            onPressed: () {
+              Widget Function()? page;
+              showMenu(
+                  context: context,
+                  position: RelativeRect.fromLTRB(Get.width, 0, 0, 0),
+                  items: [
+                    PopupMenuItem(
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: const [
+                            Icon(Icons.info, color: Colors.blue, size: 30),
+                            Text("Acerca de"),
+                          ],
+                        ),
+                        onTap: () => page = () => const AboutView()),
+                  ]).whenComplete(() => page != null ? Get.to(() => page!()) : null);
             }),
       ],
       backgroundColor: Colors.white,

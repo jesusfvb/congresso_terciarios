@@ -3,6 +3,7 @@ import 'package:congresso_terciarios/dto/event_dto.dart';
 import 'package:congresso_terciarios/dto/user_dto.dart';
 import 'package:congresso_terciarios/service/google_sheets_service.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
+import 'package:congresso_terciarios/view/about_view.dart';
 import 'package:congresso_terciarios/view/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';

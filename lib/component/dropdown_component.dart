@@ -18,24 +18,27 @@ class DropdownComponent extends StatelessWidget {
             border: Border.all(color: Colors.blue, width: 2),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 15),
-          margin: const EdgeInsets.only(left: 8, right: 10,top: 5),
-          child: DropdownButtonHideUnderline(
-            child: DropdownButtonFormField(
-                decoration: InputDecoration(
-                  label: state.selectedEvent == null ? const Text("Eventos") : null,
-                  border: InputBorder.none,
-                ),
-                value: state.selectedEvent,
-                items: state.events.map((String event) {
-                  return DropdownMenuItem(
-                    value: event,
-                    child: Text(event),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  state.setSelectedEvents(value!);
-                }),
-          ),
+          margin: const EdgeInsets.only(left: 8, right: 10, top: 5),
+          child: DropdownButtonFormField(
+              isExpanded: true,
+              decoration: InputDecoration(
+                label: state.selectedEvent == null ? const Text("Eventos") : null,
+                border: InputBorder.none,
+              ),
+              value: state.selectedEvent,
+              items: state.events.map((String event) {
+                return DropdownMenuItem(
+                  value: event,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    event,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+              }).toList(),
+              onChanged: (value) {
+                state.setSelectedEvents(value!);
+              }),
         ),
       ),
     );
