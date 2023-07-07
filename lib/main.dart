@@ -3,6 +3,7 @@ import 'package:congresso_terciarios/dto/event_dto.dart';
 import 'package:congresso_terciarios/dto/user_dto.dart';
 import 'package:congresso_terciarios/service/google_sheets_service.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
+import 'package:congresso_terciarios/state/wakelock_state.dart';
 import 'package:congresso_terciarios/view/about_view.dart';
 import 'package:congresso_terciarios/view/home_view.dart';
 import 'package:flutter/material.dart';
@@ -27,18 +28,27 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final googleSheetsService = Get.find<GoogleSheetsService>();
+    final wakeLockState = Get.put(WakelockState());
 
     googleSheetsService.getAllData();
 
     return GetMaterialApp(
       title: 'Congresso Terciarios',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
       home: Scaffold(
         appBar: AppBarComponent(),
-        body: const HomeView(),
+        body: HomeView(),
       ),
+      routingCallback: (routing) {
+        if (routing?.current == '/QrScannerView') {
+          wakeLockState.active();
+        } else {
+          wakeLockState.inactive();
+        }
+      },
     );
   }
 }

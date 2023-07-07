@@ -27,7 +27,7 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
               disable: eventState.selectedEvent == null,
               icon: Icons.qr_code_scanner,
               onPressed: () {
-                Get.to(QrScannerView());
+                Get.to(() => QrScannerView());
               }),
         ),
         IconComponent.iconAppBar(
