@@ -4,10 +4,12 @@ part 'event_dto.g.dart';
 
 @HiveType(typeId: 2)
 class EventDto {
+  @HiveField(2)
+  int colum;
   @HiveField(0)
   String name;
   @HiveField(1)
   List<String> users;
 
-  EventDto(this.name, this.users);
+  EventDto(this.name, this.users, this.colum);
 }

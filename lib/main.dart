@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
     final googleSheetsService = Get.find<GoogleSheetsService>();
     final wakeLockState = Get.put(WakelockState());
 
-    googleSheetsService.getAllData();
+    googleSheetsService.download();
 
     return GetMaterialApp(
       title: 'Congresso Terciarios',

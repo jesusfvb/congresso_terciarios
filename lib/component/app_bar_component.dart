@@ -1,6 +1,6 @@
+import 'dart:async';
+
 import 'package:congresso_terciarios/component/dropdown_component.dart';
-import 'package:congresso_terciarios/component/icon_component.dart';
-import 'package:congresso_terciarios/component/icon_component.dart';
 import 'package:congresso_terciarios/component/icon_component.dart';
 import 'package:congresso_terciarios/view/about_view.dart';
 import 'package:congresso_terciarios/view/qr_scanner_view.dart';
@@ -13,9 +13,30 @@ import '../state/event_state.dart';
 
 class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
   final GoogleSheetsService _googleSheetsService = Get.find();
-  final EventState eventState = Get.find();
+  final EventState _eventState = Get.find();
 
   AppBarComponent({super.key});
+
+  PopupMenuItem _menuItem({
+    required String text,
+    required IconData iconData,
+    void Function()? onTap,
+    required String value,
+    Color color = Colors.blue,
+  }) =>
+      (PopupMenuItem(
+          onTap: onTap,
+          value: value,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Icon(iconData, color: color, size: 30),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(text),
+              ),
+            ],
+          )));
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +45,7 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
         const DropdownComponent(),
         Obx(
           () => IconComponent.iconAppBar(
-              disable: eventState.selectedEvent == null,
+              disable: _eventState.selectedEvent == null,
               icon: Icons.qr_code_scanner,
               onPressed: () {
                 Get.to(() => QrScannerView());
@@ -34,30 +55,69 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
             icon: Icons.sync,
             onPressed: () async {
               NotificationService.showLoadingDialog();
-              var isError = await _googleSheetsService.update();
+              var isNotError = await _googleSheetsService.upload();
+              if (isNotError) {
+                isNotError = await _googleSheetsService.download();
+              }
               Get.back();
-              if (!isError) NotificationService.showErrorNetworkSnackbar();
+              if (!isNotError) NotificationService.showErrorNetworkSnackbar();
             }),
-        IconComponent.iconAppBar(
-            icon: Icons.more_vert_rounded,
-            onPressed: () {
-              Widget Function()? page;
-              showMenu(
-                  context: context,
-                  position: RelativeRect.fromLTRB(Get.width, 0, 0, 0),
-                  items: [
-                    PopupMenuItem(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: const [
-                            Icon(Icons.info, color: Colors.blue, size: 30),
-                            Text("Acerca de"),
-                          ],
-                        ),
-                        onTap: () => page = () => const AboutView()),
-                  ]).whenComplete(() => page != null ? Get.to(() => page!()) : null);
-            }),
+        PopupMenuButton(
+            icon: const Icon(
+              Icons.more_vert,
+              color: Colors.blueAccent,
+              size: 30,
+            ),
+            splashRadius: 30,
+            onSelected: (value) async {
+              switch (value) {
+                case "about":
+                  Get.to(() => const AboutView());
+                  break;
+                case "delete":
+                  NotificationService.showLoadingDialog();
+                  Timer(0.5.seconds, () async {
+                    await _eventState.clearAssists();
+                    Get.back();
+                  });
+                  break;
+                case "download":
+                  NotificationService.showLoadingDialog();
+                  var isError = await _googleSheetsService.download();
+                  Get.back();
+                  if (!isError) NotificationService.showErrorNetworkSnackbar();
+                  break;
+                case "upload":
+                  NotificationService.showLoadingDialog();
+                  var isError = await _googleSheetsService.upload();
+                  Get.back();
+                  if (!isError) NotificationService.showErrorNetworkSnackbar();
+                  break;
+              }
+            },
+            itemBuilder: (context) => [
+                  _menuItem(
+                    text: "Subir",
+                    iconData: Icons.arrow_upward,
+                    value: "upload",
+                  ),
+                  _menuItem(
+                    value: "download",
+                    text: "Bajar",
+                    iconData: Icons.arrow_downward,
+                  ),
+                  _menuItem(
+                    text: "Borrar",
+                    value: "delete",
+                    iconData: Icons.delete,
+                    color: Colors.red,
+                  ),
+                  _menuItem(
+                    text: "Acerca de",
+                    value: "about",
+                    iconData: Icons.info,
+                  ),
+                ])
       ],
       backgroundColor: Colors.white,
       elevation: 0,

@@ -12,9 +12,11 @@ class EventState extends GetxController {
   void onInit() async {
     super.onInit();
     _events.value = _storageService.readEvents("db") ?? {};
-    var eventSelected = _storageService.readEvent("db");
-    if (_events.value.containsKey(eventSelected?.name)) {
-      _selectedEvent.value = eventSelected;
+    var eventSelectedName = _storageService.readEvent("db")?.name;
+    if (eventSelectedName != null && _events.containsKey(eventSelectedName)) {
+      var event = _events[eventSelectedName];
+      _storageService.saveEvent("db", event!);
+      _selectedEvent.value = event;
     } else {
       _selectedEvent.value = null;
     }
@@ -22,6 +24,8 @@ class EventState extends GetxController {
 
   @override
   void refresh() {
+    _selectedEvent.value = null;
+    _events.value = {};
     onInit();
   }
 
@@ -41,6 +45,16 @@ class EventState extends GetxController {
       _storageService.saveEvents("db", events);
       _selectedEvent.refresh();
     }
+  }
+
+  Future clearAssists() async {
+    _events.value.values.forEach((element) {
+      element.users.clear();
+    });
+    await _storageService.saveEvents("db", _events.value);
+    _selectedEvent.value?.users.clear();
+    await _storageService.saveEvent("db", _selectedEvent.value!);
+    _selectedEvent.refresh();
   }
 
   List<String> get events {

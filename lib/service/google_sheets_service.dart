@@ -38,7 +38,7 @@ class GoogleSheetsService {
     return this;
   }
 
-  Future<bool> getAllData({bool message = false}) async {
+  Future<bool> download() async {
     if (!await _init()) {
       return false;
     }
@@ -64,10 +64,25 @@ class GoogleSheetsService {
         }
       }
 
-      await _storageService.saveUsers("db", users);
-      _userState.refresh();
+      final eventsDb = _storageService.readEvents("db");
+      if (eventsDb != null) {
+        for (var event in eventsDb.values) {
+          if (events.containsKey(event.name)) {
+            event.users.forEach((userId) {
+              if (!events[event.name]!.users.contains(userId)) {
+                if (users.containsKey(userId)) {
+                  events[event.name]!.users.add(userId);
+                }
+              }
+            });
+          }
+        }
+      }
+
       await _storageService.saveEvents("db", events);
       _eventState.refresh();
+      await _storageService.saveUsers("db", users);
+      _userState.refresh();
       return true;
     } catch (e) {
       // print("Error de connexion 2");
@@ -75,7 +90,7 @@ class GoogleSheetsService {
     }
   }
 
-  Future<bool> update() async {
+  Future<bool> upload() async {
     if (!await _init()) {
       return false;
     }
@@ -92,7 +107,6 @@ class GoogleSheetsService {
                 if (indexRow == null || indexRow < 0) continue;
                 await _worksheet?.values.insertValue("X", column: indexColumn, row: indexRow);
               } catch (e) {
-                getAllData();
                 // print("Error de connexion 5");
                 return false;
               }
@@ -103,7 +117,7 @@ class GoogleSheetsService {
           }
         }
       }
-      return await getAllData(message: true);
+      return true;
     } catch (e) {
       // print("Error de connexion 3");
       return false;

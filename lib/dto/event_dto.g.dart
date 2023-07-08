@@ -19,13 +19,16 @@ class EventDtoAdapter extends TypeAdapter<EventDto> {
     return EventDto(
       fields[0] as String,
       (fields[1] as List).cast<String>(),
+      fields[2] as int,
     );
   }
 
   @override
   void write(BinaryWriter writer, EventDto obj) {
     writer
+      ..writeByte(3)
       ..writeByte(2)
+      ..write(obj.colum)
       ..writeByte(0)
       ..write(obj.name)
       ..writeByte(1)
