@@ -75,11 +75,32 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
                   Get.to(() => const AboutView());
                   break;
                 case "delete":
-                  NotificationService.showLoadingDialog();
-                  Timer(0.5.seconds, () async {
-                    await _eventState.clearAssists();
-                    Get.back();
-                  });
+                  showDialog(
+                      context: context,
+                      builder: (context) => (AlertDialog(
+                            title: const Text("¿Estas seguro?"),
+                            content: const Text("Se borraran todas las asistencias"),
+                            actions: [
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
+                                onPressed: () => Get.back(),
+                                child: const Text("Cancelar"),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Get.back();
+                                  NotificationService.showLoadingDialog();
+                                  Timer(0.5.seconds, () async {
+                                    await _eventState.clearAssists();
+                                    Get.back();
+                                  });
+                                },
+                                child: const Text("Aceptar"),
+                              ),
+                            ],
+                          )));
                   break;
                 case "download":
                   NotificationService.showLoadingDialog();
