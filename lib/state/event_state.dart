@@ -12,9 +12,14 @@ class EventState extends GetxController {
   void onInit() async {
     super.onInit();
     _events.value = _storageService.readEvents("db") ?? {};
-    var eventSelectedName = _storageService.readEvent("db")?.name;
-    if (eventSelectedName != null && _events.containsKey(eventSelectedName)) {
-      var event = _events[eventSelectedName];
+    var eventSelected = _storageService.readEvent("db");
+    if (eventSelected != null) {
+      EventDto? event;
+      if (_events.value.containsKey(eventSelected.name)) {
+        event = _events[eventSelected.name];
+      } else {
+        event = _events.values.firstWhere((element) => element.colum == eventSelected.colum);
+      }
       _storageService.saveEvent("db", event!);
       _selectedEvent.value = event;
     } else {

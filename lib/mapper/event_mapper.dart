@@ -5,7 +5,7 @@ class EventMapper {
     Map<String, EventDto> exit = {};
     var i = 0;
     for (var event in events) {
-      exit[event] = EventDto(event, [], i + 6);
+      exit[event] = EventDto(event, [], i + 7);
       i++;
     }
     return exit;

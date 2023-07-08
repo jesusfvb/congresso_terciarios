@@ -1,3 +1,4 @@
+import 'package:congresso_terciarios/dto/event_dto.dart';
 import 'package:congresso_terciarios/mapper/user_mapper.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
 import 'package:congresso_terciarios/state/event_state.dart';
@@ -67,11 +68,17 @@ class GoogleSheetsService {
       final eventsDb = _storageService.readEvents("db");
       if (eventsDb != null) {
         for (var event in eventsDb.values) {
+          String? name;
           if (events.containsKey(event.name)) {
+            name = event.name;
+          } else {
+            name = events.values.firstWhere((element) => element.colum == event.colum).name;
+          }
+          if (name != null) {
             event.users.forEach((userId) {
-              if (!events[event.name]!.users.contains(userId)) {
+              if (!events[name]!.users.contains(userId)) {
                 if (users.containsKey(userId)) {
-                  events[event.name]!.users.add(userId);
+                  events[name]!.users.add(userId);
                 }
               }
             });
@@ -97,15 +104,15 @@ class GoogleSheetsService {
     try {
       var events = _storageService.readEvents("db");
       if (events != null) {
-        for (var event in events.values) {
+        var eventsList = events.values.where((element) => element.users.isNotEmpty).toList();
+        for (var event in eventsList) {
           try {
-            var indexColumn = await _worksheet?.values.columnIndexOf(event.name);
-            if (indexColumn == null || indexColumn < 0) continue;
+            if (event.users.isEmpty) continue;
             for (var user in event.users) {
               try {
                 var indexRow = await _worksheet?.values.rowIndexOf(user, inColumn: 4);
                 if (indexRow == null || indexRow < 0) continue;
-                await _worksheet?.values.insertValue("X", column: indexColumn, row: indexRow);
+                await _worksheet?.values.insertValue("X", column: event.colum, row: indexRow);
               } catch (e) {
                 // print("Error de connexion 5");
                 return false;
