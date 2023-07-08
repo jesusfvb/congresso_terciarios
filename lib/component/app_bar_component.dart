@@ -69,70 +69,7 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
               size: 30,
             ),
             splashRadius: 30,
-            onSelected: (value) async {
-              switch (value) {
-                case "about":
-                  Get.to(() => const AboutView());
-                  break;
-                case "delete":
-                  showDialog(
-                      context: context,
-                      builder: (context) => (AlertDialog(
-                            title: const Text("¿Estas seguro?"),
-                            content: const Text("Se borraran todas las asistencias"),
-                            actions: [
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                ),
-                                onPressed: () => Get.back(),
-                                child: const Text("Cancelar"),
-                              ),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Get.back();
-                                  NotificationService.showLoadingDialog();
-                                  Timer(0.5.seconds, () async {
-                                    await _eventState.clearAssists();
-                                    Get.back();
-                                  });
-                                },
-                                child: const Text("Aceptar"),
-                              ),
-                            ],
-                          )));
-                  break;
-                case "download":
-                  NotificationService.showLoadingDialog();
-                  var isError = await _googleSheetsService.download();
-                  Get.back();
-                  if (!isError) NotificationService.showErrorNetworkSnackbar();
-                  break;
-                case "upload":
-                  NotificationService.showLoadingDialog();
-                  var isError = await _googleSheetsService.upload();
-                  Get.back();
-                  if (!isError) NotificationService.showErrorNetworkSnackbar();
-                  break;
-              }
-            },
             itemBuilder: (context) => [
-                  _menuItem(
-                    text: "Subir",
-                    iconData: Icons.arrow_upward,
-                    value: "upload",
-                  ),
-                  _menuItem(
-                    value: "download",
-                    text: "Bajar",
-                    iconData: Icons.arrow_downward,
-                  ),
-                  _menuItem(
-                    text: "Borrar",
-                    value: "delete",
-                    iconData: Icons.delete,
-                    color: Colors.red,
-                  ),
                   _menuItem(
                     text: "Acerca de",
                     value: "about",

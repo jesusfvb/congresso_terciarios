@@ -1,4 +1,3 @@
-import 'package:congresso_terciarios/dto/event_dto.dart';
 import 'package:congresso_terciarios/mapper/user_mapper.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
 import 'package:congresso_terciarios/state/event_state.dart';
@@ -72,7 +71,10 @@ class GoogleSheetsService {
           if (events.containsKey(event.name)) {
             name = event.name;
           } else {
-            name = events.values.firstWhere((element) => element.colum == event.colum).name;
+            name = events.values
+                .toList()
+                .firstWhereOrNull((element) => element.colum == event.colum)
+                ?.name;
           }
           if (name != null) {
             event.users.forEach((userId) {
