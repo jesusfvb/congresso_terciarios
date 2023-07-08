@@ -15,7 +15,7 @@ class AboutView extends StatelessWidget {
               child: Center(
                 child: Image.asset(
                   'assets/img/img_1.jpg',
-                  height: 300,
+                  height: kToolbarHeight * 4,
                 ),
               ),
             ),
