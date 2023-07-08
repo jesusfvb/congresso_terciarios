@@ -55,10 +55,7 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
             icon: Icons.sync,
             onPressed: () async {
               NotificationService.showLoadingDialog();
-              var isNotError = await _googleSheetsService.upload();
-              if (isNotError) {
-                isNotError = await _googleSheetsService.download();
-              }
+              var isNotError = await _googleSheetsService.sync();
               Get.back();
               if (!isNotError) NotificationService.showErrorNetworkSnackbar();
             }),

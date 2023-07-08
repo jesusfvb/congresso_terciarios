@@ -38,7 +38,7 @@ class GoogleSheetsService {
     return this;
   }
 
-  Future<bool> download() async {
+  Future<bool> download({bool combine = true, bool master = true}) async {
     if (!await _init()) {
       return false;
     }
@@ -49,41 +49,44 @@ class GoogleSheetsService {
       final usersList = allRows.sublist(1);
       final users = UserMapper.fromRowListToMap(usersList);
 
-      for (var user in usersList) {
-        if (user.isEmpty) continue;
-        String id = user[3];
-        if (user.length > 5) {
-          var assistance = user.sublist(6);
-          var cont = 0;
-          for (var check in assistance) {
-            if (check == "X" || check == "x") {
-              events[eventList[cont]]?.users.add(id);
+      if (!master) {
+        for (var user in usersList) {
+          if (user.isEmpty) continue;
+          String id = user[3];
+          if (user.length > 5) {
+            var assistance = user.sublist(6);
+            var cont = 0;
+            for (var check in assistance) {
+              if (check == "X" || check == "x") {
+                events[eventList[cont]]?.users.add(id);
+              }
+              cont++;
             }
-            cont++;
           }
         }
       }
-
-      final eventsDb = _storageService.readEvents("db");
-      if (eventsDb != null) {
-        for (var event in eventsDb.values) {
-          String? name;
-          if (events.containsKey(event.name)) {
-            name = event.name;
-          } else {
-            name = events.values
-                .toList()
-                .firstWhereOrNull((element) => element.colum == event.colum)
-                ?.name;
-          }
-          if (name != null) {
-            event.users.forEach((userId) {
-              if (!events[name]!.users.contains(userId)) {
-                if (users.containsKey(userId)) {
-                  events[name]!.users.add(userId);
+      if (combine) {
+        final eventsDb = _storageService.readEvents("db");
+        if (eventsDb != null) {
+          for (var event in eventsDb.values) {
+            String? name;
+            if (events.containsKey(event.name)) {
+              name = event.name;
+            } else {
+              name = events.values
+                  .toList()
+                  .firstWhereOrNull((element) => element.colum == event.colum)
+                  ?.name;
+            }
+            if (name != null) {
+              event.users.forEach((userId) {
+                if (!events[name]!.users.contains(userId)) {
+                  if (users.containsKey(userId)) {
+                    events[name]!.users.add(userId);
+                  }
                 }
-              }
-            });
+              });
+            }
           }
         }
       }
@@ -133,6 +136,12 @@ class GoogleSheetsService {
     }
   }
 
+  Future<bool> isMaster() async {
+    var row = await _worksheet?.values.row(1);
+    if (row == null) return true;
+    return !row.contains("@@MASTER@@");
+  }
+
   Future<bool> _init({message = true}) async {
     if (_worksheet != null) return true;
     try {
@@ -143,5 +152,15 @@ class GoogleSheetsService {
       // print("Error connexion 1");
       return false;
     }
+  }
+
+  Future<bool> sync() async {
+    var isMaster = await this.isMaster();
+    var exist = true;
+    if (isMaster) {
+      exist = await upload();
+    }
+    if (exist) exist = await download(combine: isMaster, master: isMaster);
+    return exist;
   }
 }
