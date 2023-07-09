@@ -65,6 +65,13 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
               color: Colors.blueAccent,
               size: 30,
             ),
+            onSelected: (value) {
+              switch (value) {
+                case "about":
+                  Get.to(() => const AboutView());
+                  break;
+              }
+            },
             splashRadius: 30,
             itemBuilder: (context) => [
                   _menuItem(
