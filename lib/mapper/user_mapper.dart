@@ -11,10 +11,8 @@ class UserMapper {
       if (row.isNotEmpty) {
         var date = row[1];
         if (date.isNotEmpty && !date.contains("/")) {
-          if (date.isDateTime) {
-            var temp = epoch.add(int.parse(date).days);
-            date = "${temp.day}/${temp.month}/${temp.year}";
-          }
+          var temp = epoch.add(int.parse(date).days);
+          date = "${temp.day}/${temp.month}/${temp.year}";
         }
         users[row[3]] = UserDto(row[3], row[0], date, row[2], row.length <= 4 ? "" : row[4],
             row.length <= 5 ? "" : row[5]);

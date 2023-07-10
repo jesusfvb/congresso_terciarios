@@ -6,6 +6,7 @@ class EventMapper {
     var i = 0;
     for (var event in events) {
       if (event == "@@MASTER@@") continue;
+      if (event.isEmpty) continue;
       exit[event] = EventDto(event, [], i + 7);
       i++;
     }

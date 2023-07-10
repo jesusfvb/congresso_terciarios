@@ -58,6 +58,7 @@ class GoogleSheetsService {
             var cont = 0;
             for (var check in assistance) {
               if (check == "X" || check == "x") {
+                if (eventList.length <= cont) continue;
                 events[eventList[cont]]?.users.add(id);
               }
               cont++;
