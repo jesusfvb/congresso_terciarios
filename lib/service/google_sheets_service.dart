@@ -28,7 +28,7 @@ class GoogleSheetsService {
   "universe_domain": "googleapis.com"
 }
   ''';
-  final _idSheets = "1DXXsXbGKvsex1d6UDj9mfMMAFYdH9CrmPQjLqdJJ9xc";
+  final _idSheets = "1f-DPjObus0RQPUQbIOXHdZBniU0QmLcojy11d4FSNNc";
   final _gSheets = GSheets(_credentials);
 
   Worksheet? _worksheet;
@@ -103,46 +103,6 @@ class GoogleSheetsService {
     }
   }
 
-  Future<bool> upload() async {
-    if (!await _init()) {
-      return false;
-    }
-    try {
-      var events = _storageService.readEvents("db");
-      if (events != null) {
-        var eventsList = events.values.where((element) => element.users.isNotEmpty).toList();
-        for (var event in eventsList) {
-          try {
-            if (event.users.isEmpty) continue;
-            for (var user in event.users) {
-              try {
-                var indexRow = await _worksheet?.values.rowIndexOf(user, inColumn: 4);
-                if (indexRow == null || indexRow < 0) continue;
-                await _worksheet?.values.insertValue("X", column: event.colum, row: indexRow);
-              } catch (e) {
-                // print("Error de connexion 5");
-                return false;
-              }
-            }
-          } catch (e) {
-            // print("Error de connexion 4");
-            return false;
-          }
-        }
-      }
-      return true;
-    } catch (e) {
-      // print("Error de connexion 3");
-      return false;
-    }
-  }
-
-  Future<bool> isMaster() async {
-    var row = await _worksheet?.values.row(1);
-    if (row == null) return true;
-    return !row.contains("@@MASTER@@");
-  }
-
   Future<bool> _init({message = true}) async {
     if (_worksheet != null) return true;
     try {
@@ -156,12 +116,6 @@ class GoogleSheetsService {
   }
 
   Future<bool> sync() async {
-    var isMaster = await this.isMaster();
-    var exist = true;
-    if (isMaster) {
-      exist = await upload();
-    }
-    if (exist) exist = await download(combine: isMaster, master: isMaster);
-    return exist;
+    return await download(master: false);
   }
 }
