@@ -25,7 +25,6 @@ class QrScannerView extends StatelessWidget {
       controller.scannedDataStream.listen((scanData) async {
         controller.stopCamera();
         var user = userState.getUserById(_getIdUser(scanData.code));
-        print(user);
         if (user != null) {
           eventState.saveParticipation(user.id);
           await player.play(AssetSource("sound/correct.mp3"));
@@ -51,18 +50,30 @@ class QrScannerView extends StatelessWidget {
     }
 
     return Scaffold(
-        body: QRView(
-          key: qrKey,
-          formatsAllowed: const [BarcodeFormat.qrcode],
-          onQRViewCreated: _onQRViewCreated,
-          overlayMargin: const EdgeInsets.all(0),
-          overlay: QrScannerOverlayShape(
-              borderColor: Colors.lightBlue,
-              borderRadius: 10,
-              borderLength: 30,
-              borderWidth: 10,
-              cutOutSize: 200),
-        ),
+        body: Stack(children: [
+          QRView(
+            key: qrKey,
+            formatsAllowed: const [BarcodeFormat.qrcode],
+            onQRViewCreated: _onQRViewCreated,
+            overlayMargin: const EdgeInsets.all(0),
+            overlay: QrScannerOverlayShape(
+                borderColor: Colors.lightBlue,
+                borderRadius: 10,
+                borderLength: 30,
+                borderWidth: 10,
+                cutOutSize: 200),
+          ),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              margin: const EdgeInsets.only(top: kToolbarHeight * 3),
+              child: Text(
+                eventState.selectedEvent ?? "",
+                style: const TextStyle(color: Colors.greenAccent, fontSize: 30),
+              ),
+            ),
+          ),
+        ]),
         bottomNavigationBar: BottomAppBar(
           color: Colors.black,
           child: Row(

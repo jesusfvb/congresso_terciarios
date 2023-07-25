@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:congresso_terciarios/component/dropdown_component.dart';
 import 'package:congresso_terciarios/component/icon_component.dart';
+import 'package:congresso_terciarios/service/csv_service.dart';
 import 'package:congresso_terciarios/view/about_view.dart';
 import 'package:congresso_terciarios/view/qr_scanner_view.dart';
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import '../state/event_state.dart';
 
 class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
   final GoogleSheetsService _googleSheetsService = Get.find();
+  final CsvService _csvService = Get.put(CsvService());
   final EventState _eventState = Get.find();
 
   AppBarComponent({super.key});
@@ -70,10 +72,21 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
                 case "about":
                   Get.to(() => const AboutView());
                   break;
+                case "export":
+                  NotificationService.showLoadingDialog();
+                  _csvService.exportCsv();
+                  Timer(const Duration(seconds: 2), () => Get.back());
+                  break;
               }
             },
             splashRadius: 30,
             itemBuilder: (context) => [
+                  _menuItem(
+                    text: "Exportar",
+                    value: "export",
+                    color: Colors.green,
+                    iconData: Icons.ios_share_outlined,
+                  ),
                   _menuItem(
                     text: "Acerca de",
                     value: "about",
