@@ -4,6 +4,7 @@ import 'package:congresso_terciarios/component/dropdown_component.dart';
 import 'package:congresso_terciarios/component/icon_component.dart';
 import 'package:congresso_terciarios/service/csv_service.dart';
 import 'package:congresso_terciarios/view/about_view.dart';
+import 'package:congresso_terciarios/view/face_scanner_view.dart';
 import 'package:congresso_terciarios/view/qr_scanner_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -51,6 +52,14 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
               icon: Icons.qr_code_scanner,
               onPressed: () {
                 Get.to(() => QrScannerView());
+              }),
+        ),
+        Obx(
+          () => IconComponent.iconAppBar(
+              disable: _eventState.selectedEvent == null,
+              icon: Icons.face,
+              onPressed: () {
+                Get.to(() => const FaceScannerView());
               }),
         ),
         IconComponent.iconAppBar(
