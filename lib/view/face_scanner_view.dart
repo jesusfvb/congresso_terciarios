@@ -15,8 +15,8 @@ class FaceScannerView extends StatefulWidget {
 class _FaceScannerViewState extends State<FaceScannerView> {
   final FaceDetector _faceDetector = FaceDetector(
     options: FaceDetectorOptions(
-      enableContours: true,
-      enableLandmarks: true,
+      // enableContours: true,
+      // enableLandmarks: true,
     ),
   );
   bool _canProcess = true;

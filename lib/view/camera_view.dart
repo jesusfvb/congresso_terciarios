@@ -3,10 +3,11 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:google_mlkit_commons/google_mlkit_commons.dart';
-
+//TODO: hacer que se cambie de camara y que funcione el flash
 class CameraView extends StatefulWidget {
-  CameraView(
+  const CameraView(
       {Key? key,
       required this.customPaint,
       required this.onImage,
@@ -69,7 +70,44 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: _liveFeedBody());
+    return Scaffold(
+        body: Stack(children: [
+          _liveFeedBody(),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              margin: const EdgeInsets.only(top: kToolbarHeight * 3),
+              child: const Text(
+                // TODO: poner los nombres de los eventos
+                ' eventState.selectedEvent ?? ""',
+                style: TextStyle(color: Colors.greenAccent, fontSize: 30),
+              ),
+            ),
+          ),
+        ]),
+        bottomNavigationBar: BottomAppBar(
+          color: Colors.black,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
+                  onPressed: () {
+                    // controller?.stopCamera();
+                    Get.back();
+                  },
+                  icon: const Icon(
+                    Icons.arrow_back,
+                    color: Colors.lightBlue,
+                  )),
+              IconButton(
+                  color: Colors.lightBlue,
+                  onPressed: () {
+                    // controller!.toggleFlash();
+                  },
+                  icon: const Icon(Icons.flash_on)),
+            ],
+          ),
+        ));
   }
 
   Widget _liveFeedBody() {
@@ -83,19 +121,19 @@ class _CameraViewState extends State<CameraView> {
         children: <Widget>[
           Center(
             child: _changingCameraLens
-                ? Center(
-                    child: const Text('Changing camera lens'),
+                ? const Center(
+                    child: Text('Changing camera lens'),
                   )
                 : CameraPreview(
                     _controller!,
                     child: widget.customPaint,
                   ),
           ),
-          _backButton(),
-          _switchLiveCameraToggle(),
-          _detectionViewModeToggle(),
-          _zoomControl(),
-          _exposureControl(),
+          // _backButton(),
+          // _switchLiveCameraToggle(),
+          // _detectionViewModeToggle(),
+          // _zoomControl(),
+          // _exposureControl(),
         ],
       ),
     );
@@ -111,7 +149,7 @@ class _CameraViewState extends State<CameraView> {
             heroTag: Object(),
             onPressed: () => Navigator.of(context).pop(),
             backgroundColor: Colors.black54,
-            child: Icon(
+            child: const Icon(
               Icons.arrow_back_ios_outlined,
               size: 20,
             ),
@@ -129,7 +167,7 @@ class _CameraViewState extends State<CameraView> {
             heroTag: Object(),
             onPressed: widget.onDetectorViewModeChanged,
             backgroundColor: Colors.black54,
-            child: Icon(
+            child: const Icon(
               Icons.photo_library_outlined,
               size: 25,
             ),
@@ -148,9 +186,7 @@ class _CameraViewState extends State<CameraView> {
             onPressed: _switchLiveCamera,
             backgroundColor: Colors.black54,
             child: Icon(
-              Platform.isIOS
-                  ? Icons.flip_camera_ios_outlined
-                  : Icons.flip_camera_android_outlined,
+              Platform.isIOS ? Icons.flip_camera_ios_outlined : Icons.flip_camera_android_outlined,
               size: 25,
             ),
           ),
@@ -195,7 +231,7 @@ class _CameraViewState extends State<CameraView> {
                     child: Center(
                       child: Text(
                         '${_currentZoomLevel.toStringAsFixed(1)}x',
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
@@ -210,7 +246,7 @@ class _CameraViewState extends State<CameraView> {
         top: 40,
         right: 8,
         child: ConstrainedBox(
-          constraints: BoxConstraints(
+          constraints: const BoxConstraints(
             maxHeight: 250,
           ),
           child: Column(children: [
@@ -225,7 +261,7 @@ class _CameraViewState extends State<CameraView> {
                 child: Center(
                   child: Text(
                     '${_currentExposureOffset.toStringAsFixed(1)}x',
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               ),
@@ -262,9 +298,7 @@ class _CameraViewState extends State<CameraView> {
       // Set to ResolutionPreset.high. Do NOT set it to ResolutionPreset.max because for some phones does NOT work.
       ResolutionPreset.high,
       enableAudio: false,
-      imageFormatGroup: Platform.isAndroid
-          ? ImageFormatGroup.nv21
-          : ImageFormatGroup.bgra8888,
+      imageFormatGroup: Platform.isAndroid ? ImageFormatGroup.nv21 : ImageFormatGroup.bgra8888,
     );
     _controller?.initialize().then((_) {
       if (!mounted) {
@@ -339,16 +373,14 @@ class _CameraViewState extends State<CameraView> {
     if (Platform.isIOS) {
       rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
     } else if (Platform.isAndroid) {
-      var rotationCompensation =
-          _orientations[_controller!.value.deviceOrientation];
+      var rotationCompensation = _orientations[_controller!.value.deviceOrientation];
       if (rotationCompensation == null) return null;
       if (camera.lensDirection == CameraLensDirection.front) {
         // front-facing
         rotationCompensation = (sensorOrientation + rotationCompensation) % 360;
       } else {
         // back-facing
-        rotationCompensation =
-            (sensorOrientation - rotationCompensation + 360) % 360;
+        rotationCompensation = (sensorOrientation - rotationCompensation + 360) % 360;
       }
       rotation = InputImageRotationValue.fromRawValue(rotationCompensation);
       // print('rotationCompensation: $rotationCompensation');
