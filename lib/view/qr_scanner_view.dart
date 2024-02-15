@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
+// ignore: must_be_immutable
 class QrScannerView extends StatelessWidget {
   QrScannerView({super.key});
 
@@ -40,8 +41,9 @@ class QrScannerView extends StatelessWidget {
         } else {
           await player.play(AssetSource("sound/error.mp3"));
           await showModalBottomSheet(
-              context: context,
-              builder: (context) => ButtonSheetQrErrorComponent()).whenComplete(() {
+                  context: context,
+                  builder: (context) => ButtonSheetQrErrorComponent())
+              .whenComplete(() {
             controller.resumeCamera();
           });
         }

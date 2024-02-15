@@ -50,24 +50,27 @@ class HomeView extends StatelessWidget {
                     onTap: () {
                       showModalBottomSheet(
                           context: context,
-                          builder: (context) =>
-                              ButtonSheetHomeComponent(user: userState.getUserById(user[0])));
+                          builder: (context) => ButtonSheetHomeComponent(
+                              user: userState.getUserById(user[0])));
                     },
-                    child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-                      Expanded(
-                          child: Text(
-                        user[1] as String,
-                        style: const TextStyle(
-                          fontSize: 20,
-                        ),
-                      )),
-                      Obx(() => (eventState.isInEventSelected(user[0])
-                          ? const Icon(Icons.check)
-                          : Container())),
-                    ]),
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Expanded(
+                              child: Text(
+                            user[1] as String,
+                            style: const TextStyle(
+                              fontSize: 20,
+                            ),
+                          )),
+                          Obx(() => (eventState.isInEventSelected(user[0])
+                              ? const Icon(Icons.check)
+                              : Container())),
+                        ]),
                   );
                 },
-                separatorBuilder: (BuildContext context, int index) => const Divider(),
+                separatorBuilder: (BuildContext context, int index) =>
+                    const Divider(),
               ),
             );
           }),

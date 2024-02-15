@@ -48,6 +48,8 @@ dependencies:
   google_mlkit_face_detection: ^0.9.0
   camera: ^0.10.5+9
   image_picker: ^1.0.7
+  flutter_face_api: ^5.2.3
+  flutter_face_core: ^5.2.0
 
 dev_dependencies:
   flutter_test:
