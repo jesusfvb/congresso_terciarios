@@ -1,6 +1,7 @@
 import 'package:congresso_terciarios/component/app_bar_component.dart';
 import 'package:congresso_terciarios/dto/event_dto.dart';
 import 'package:congresso_terciarios/dto/user_dto.dart';
+import 'package:congresso_terciarios/service/face_compare_service.dart';
 import 'package:congresso_terciarios/service/google_sheets_service.dart';
 import 'package:congresso_terciarios/service/storage_service.dart';
 import 'package:congresso_terciarios/state/wakelock_state.dart';
