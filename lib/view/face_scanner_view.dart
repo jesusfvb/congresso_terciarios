@@ -1,7 +1,10 @@
 import 'package:camera/camera.dart';
 import 'package:congresso_terciarios/component/botton_navigation_bar_camera_component.dart';
+import 'package:congresso_terciarios/component/face_detector_painter_component.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 class FaceScannerView extends StatefulWidget {
   late final List<CameraDescription> _cameras;
@@ -15,8 +18,19 @@ class FaceScannerView extends StatefulWidget {
 }
 
 class _FaceScannerViewState extends State<FaceScannerView> {
+  //Camera
   CameraController? _controller;
   int _cameraIndex = -1;
+  final CameraLensDirection _cameraLensDirection = CameraLensDirection.back;
+
+  //Face
+  final FaceDetector _faceDetector = FaceDetector(
+    options: FaceDetectorOptions(
+      enableContours: true,
+      enableLandmarks: true,
+    ),
+  );
+  CustomPaint? _customPaint;
 
   @override
   void initState() {
@@ -41,6 +55,7 @@ class _FaceScannerViewState extends State<FaceScannerView> {
         ));
   }
 
+  //Camera
   Widget _liveFeedBody() {
     if (widget._cameras.isEmpty) return Container();
     if (_controller == null) return Container();
@@ -53,6 +68,7 @@ class _FaceScannerViewState extends State<FaceScannerView> {
           Center(
             child: CameraPreview(
               _controller!,
+              child: _customPaint,
             ),
           ),
         ],
@@ -65,7 +81,7 @@ class _FaceScannerViewState extends State<FaceScannerView> {
       widget._cameras = await availableCameras();
     }
     for (var i = 0; i < widget._cameras.length; i++) {
-      if (widget._cameras[i].lensDirection == CameraLensDirection.back) {
+      if (widget._cameras[i].lensDirection == _cameraLensDirection) {
         _cameraIndex = i;
         break;
       }
@@ -89,14 +105,7 @@ class _FaceScannerViewState extends State<FaceScannerView> {
         return;
       }
 
-      // _controller?.startImageStream(_processCameraImage).then((value) {
-      //   if (widget.onCameraFeedReady != null) {
-      //     widget.onCameraFeedReady!();
-      //   }
-      //   if (widget.onCameraLensDirectionChanged != null) {
-      //     widget.onCameraLensDirectionChanged!(camera.lensDirection);
-      //   }
-      // });
+      _controller?.startImageStream(_processCameraImage).then((value) {});
       setState(() {});
     });
   }
@@ -105,5 +114,95 @@ class _FaceScannerViewState extends State<FaceScannerView> {
     // _controller?.stopImageStream();
     _controller?.dispose();
     _controller = null;
+  }
+
+  void _processCameraImage(CameraImage image) {
+    final inputImage = _inputImageFromCameraImage(image);
+    if (inputImage == null) return;
+    _processImage(inputImage);
+  }
+
+  final _orientations = {
+    DeviceOrientation.portraitUp: 0,
+    DeviceOrientation.landscapeLeft: 90,
+    DeviceOrientation.portraitDown: 180,
+    DeviceOrientation.landscapeRight: 270,
+  };
+
+  InputImage? _inputImageFromCameraImage(CameraImage image) {
+    if (_controller == null) return null;
+
+    // get image rotation
+    // it is used in android to convert the InputImage from Dart to Java: https://github.com/flutter-ml/google_ml_kit_flutter/blob/master/packages/google_mlkit_commons/android/src/main/java/com/google_mlkit_commons/InputImageConverter.java
+    // `rotation` is not used in iOS to convert the InputImage from Dart to Obj-C: https://github.com/flutter-ml/google_ml_kit_flutter/blob/master/packages/google_mlkit_commons/ios/Classes/MLKVisionImage%2BFlutterPlugin.m
+    // in both platforms `rotation` and `camera.lensDirection` can be used to compensate `x` and `y` coordinates on a canvas: https://github.com/flutter-ml/google_ml_kit_flutter/blob/master/packages/example/lib/vision_detector_views/painters/coordinates_translator.dart
+    final camera = widget._cameras[_cameraIndex];
+    final sensorOrientation = camera.sensorOrientation;
+    // print(
+    //     'lensDirection: ${camera.lensDirection}, sensorOrientation: $sensorOrientation, ${_controller?.value.deviceOrientation} ${_controller?.value.lockedCaptureOrientation} ${_controller?.value.isCaptureOrientationLocked}');
+    InputImageRotation? rotation;
+    if (GetPlatform.isIOS) {
+      rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
+    } else if (GetPlatform.isAndroid) {
+      var rotationCompensation = _orientations[_controller!.value.deviceOrientation];
+      if (rotationCompensation == null) return null;
+      if (camera.lensDirection == CameraLensDirection.front) {
+        // front-facing
+        rotationCompensation = (sensorOrientation + rotationCompensation) % 360;
+      } else {
+        // back-facing
+        rotationCompensation = (sensorOrientation - rotationCompensation + 360) % 360;
+      }
+      rotation = InputImageRotationValue.fromRawValue(rotationCompensation);
+      // print('rotationCompensation: $rotationCompensation');
+    }
+    if (rotation == null) return null;
+    // print('final rotation: $rotation');
+
+    // get image format
+    final format = InputImageFormatValue.fromRawValue(image.format.raw);
+    // validate format depending on platform
+    // only supported formats:
+    // * nv21 for Android
+    // * bgra8888 for iOS
+    if (format == null ||
+        (GetPlatform.isAndroid && format != InputImageFormat.nv21) ||
+        (GetPlatform.isIOS && format != InputImageFormat.bgra8888)) return null;
+
+    // since format is constraint to nv21 or bgra8888, both only have one plane
+    if (image.planes.length != 1) return null;
+    final plane = image.planes.first;
+
+    // compose InputImage using bytes
+    return InputImage.fromBytes(
+      bytes: plane.bytes,
+      metadata: InputImageMetadata(
+        size: Size(image.width.toDouble(), image.height.toDouble()),
+        rotation: rotation, // used only in Android
+        format: format, // used only in iOS
+        bytesPerRow: plane.bytesPerRow, // used only in iOS
+      ),
+    );
+  }
+
+  //Detected faces
+  void _processImage(InputImage inputImage) async {
+    setState(() {});
+    final faces = await _faceDetector.processImage(inputImage);
+
+    if (inputImage.metadata?.size != null &&
+        inputImage.metadata?.rotation != null) {
+      final painter = FaceDetectorPainter(
+        faces,
+        inputImage.metadata!.size,
+        inputImage.metadata!.rotation,
+        _cameraLensDirection,
+      );
+      _customPaint = CustomPaint(painter: painter);
+    }
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 }
