@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:camera/camera.dart';
 import 'package:congresso_terciarios/component/dropdown_component.dart';
 import 'package:congresso_terciarios/component/icon_component.dart';
 import 'package:congresso_terciarios/service/csv_service.dart';
@@ -58,8 +59,11 @@ class AppBarComponent extends StatelessWidget implements PreferredSizeWidget {
           () => IconComponent.iconAppBar(
               disable: _eventState.selectedEvent == null,
               icon: Icons.face,
-              onPressed: () {
-                Get.to(() => const FaceScannerView());
+              onPressed: () async {
+                var cameras = await availableCameras();
+                Get.to(() => FaceScannerView(
+                      cameras: cameras,
+                    ));
               }),
         ),
         IconComponent.iconAppBar(

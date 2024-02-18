@@ -1,78 +1,109 @@
 import 'package:camera/camera.dart';
+import 'package:congresso_terciarios/component/botton_navigation_bar_camera_component.dart';
 import 'package:flutter/material.dart';
-import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-
-import '../painters/face_detector_painter.dart';
-import 'detector_wiew.dart';
+import 'package:get/get.dart';
 
 class FaceScannerView extends StatefulWidget {
-  const FaceScannerView({super.key});
+  late final List<CameraDescription> _cameras;
+
+  FaceScannerView({super.key, required List<CameraDescription> cameras}) {
+    _cameras = cameras;
+  }
 
   @override
   State<FaceScannerView> createState() => _FaceScannerViewState();
 }
 
 class _FaceScannerViewState extends State<FaceScannerView> {
-  final FaceDetector _faceDetector = FaceDetector(
-    options: FaceDetectorOptions(
-      // enableContours: true,
-      // enableLandmarks: true,
-    ),
-  );
-  bool _canProcess = true;
-  bool _isBusy = false;
-  CustomPaint? _customPaint;
-  String? _text;
-  var _cameraLensDirection = CameraLensDirection.front;
+  CameraController? _controller;
+  int _cameraIndex = -1;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialize();
+  }
 
   @override
   void dispose() {
-    _canProcess = false;
-    _faceDetector.close();
+    _stopLiveFeed();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return DetectorView(
-      title: 'Face Detector',
-      customPaint: _customPaint,
-      text: _text,
-      onImage: _processImage,
-      initialCameraLensDirection: _cameraLensDirection,
-      onCameraLensDirectionChanged: (value) => _cameraLensDirection = value,
+    return Scaffold(
+        body: _liveFeedBody(),
+        bottomNavigationBar: BottomNavigationBarCameraComponent(
+          onBackPressed: () {
+            Get.back();
+          },
+        ));
+  }
+
+  Widget _liveFeedBody() {
+    if (widget._cameras.isEmpty) return Container();
+    if (_controller == null) return Container();
+    if (_controller?.value.isInitialized == false) return Container();
+    return ColoredBox(
+      color: Colors.black,
+      child: Stack(
+        fit: StackFit.expand,
+        children: <Widget>[
+          Center(
+            child: CameraPreview(
+              _controller!,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Future<void> _processImage(InputImage inputImage) async {
-    if (!_canProcess) return;
-    if (_isBusy) return;
-    _isBusy = true;
-    setState(() {
-      _text = '';
-    });
-    final faces = await _faceDetector.processImage(inputImage);
-    if (inputImage.metadata?.size != null &&
-        inputImage.metadata?.rotation != null) {
-      final painter = FaceDetectorPainter(
-        faces,
-        inputImage.metadata!.size,
-        inputImage.metadata!.rotation,
-        _cameraLensDirection,
-      );
-      _customPaint = CustomPaint(painter: painter);
-    } else {
-      String text = 'Faces found: ${faces.length}\n\n';
-      for (final face in faces) {
-        text += 'face: ${face.boundingBox}\n\n';
+  void _initialize() async {
+    if (widget._cameras.isEmpty) {
+      widget._cameras = await availableCameras();
+    }
+    for (var i = 0; i < widget._cameras.length; i++) {
+      if (widget._cameras[i].lensDirection == CameraLensDirection.back) {
+        _cameraIndex = i;
+        break;
       }
-      _text = text;
-      // TODO: set _customPaint to draw boundingRect on top of image
-      _customPaint = null;
     }
-    _isBusy = false;
-    if (mounted) {
+    if (_cameraIndex != -1) {
+      _startLiveFeed();
+    }
+  }
+
+  void _startLiveFeed() async {
+    final camera = widget._cameras[_cameraIndex];
+    _controller = CameraController(
+      camera,
+      // Set to ResolutionPreset.high. Do NOT set it to ResolutionPreset.max because for some phones does NOT work.
+      ResolutionPreset.high,
+      enableAudio: false,
+      imageFormatGroup: GetPlatform.isAndroid ? ImageFormatGroup.nv21 : ImageFormatGroup.bgra8888,
+    );
+    _controller?.initialize().then((_) {
+      if (!mounted) {
+        return;
+      }
+
+      // _controller?.startImageStream(_processCameraImage).then((value) {
+      //   if (widget.onCameraFeedReady != null) {
+      //     widget.onCameraFeedReady!();
+      //   }
+      //   if (widget.onCameraLensDirectionChanged != null) {
+      //     widget.onCameraLensDirectionChanged!(camera.lensDirection);
+      //   }
+      // });
       setState(() {});
-    }
+    });
+  }
+
+  void _stopLiveFeed() {
+    // _controller?.stopImageStream();
+    _controller?.dispose();
+    _controller = null;
   }
 }

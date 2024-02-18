@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:congresso_terciarios/component/botton_navigation_bar_camera_component.dart';
 import 'package:congresso_terciarios/component/button_sheet_qr_component.dart';
 import 'package:congresso_terciarios/state/event_state.dart';
 import 'package:congresso_terciarios/state/user_state.dart';
@@ -41,9 +42,8 @@ class QrScannerView extends StatelessWidget {
         } else {
           await player.play(AssetSource("sound/error.mp3"));
           await showModalBottomSheet(
-                  context: context,
-                  builder: (context) => ButtonSheetQrErrorComponent())
-              .whenComplete(() {
+              context: context,
+              builder: (context) => ButtonSheetQrErrorComponent()).whenComplete(() {
             controller.resumeCamera();
           });
         }
@@ -76,28 +76,14 @@ class QrScannerView extends StatelessWidget {
             ),
           ),
         ]),
-        bottomNavigationBar: BottomAppBar(
-          color: Colors.black,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-                  onPressed: () {
-                    controller?.stopCamera();
-                    Get.back();
-                  },
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.lightBlue,
-                  )),
-              IconButton(
-                  color: Colors.lightBlue,
-                  onPressed: () {
-                    controller!.toggleFlash();
-                  },
-                  icon: const Icon(Icons.flash_on)),
-            ],
-          ),
+        bottomNavigationBar: BottomNavigationBarCameraComponent(
+          onBackPressed: () {
+            controller?.stopCamera();
+            Get.back();
+          },
+          onToggleFlashPressed: () {
+            controller!.toggleFlash();
+          },
         ));
   }
 
