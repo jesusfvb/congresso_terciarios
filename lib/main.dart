@@ -10,6 +10,7 @@ import 'package:get/get.dart';
 import 'package:hive_flutter/adapters.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   Hive.registerAdapter(UserDtoAdapter());
   Hive.registerAdapter(EventDtoAdapter());
   await Hive.initFlutter();
