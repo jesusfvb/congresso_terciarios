@@ -9,6 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:image/image.dart' as imglib;
+
+import '../service/face_compare_service.dart';
 
 class FaceScannerView extends StatefulWidget {
   late final List<CameraDescription> _cameras;
@@ -30,6 +33,8 @@ class _FaceScannerViewState extends State<FaceScannerView> {
   final List<Face> _faces = [];
   bool _canProcess = true;
   bool _isBusy = false;
+
+  final FaceCompareService _faceCompareService = FaceCompareService();
 
   @override
   Widget build(BuildContext context) {
@@ -168,6 +173,9 @@ class _FaceScannerViewState extends State<FaceScannerView> {
       var faces = await _faceDetector.processImage(inputImage);
       if (faces.isNotEmpty) {
         print("Faces: ${faces.length}");
+        for (var element in faces) {
+           _saveFaceDetected(face: element);
+        }
         _isBusy = false;
         setState(() {
           _faces.clear();
@@ -181,21 +189,30 @@ class _FaceScannerViewState extends State<FaceScannerView> {
     }
   }
 
-  //Image File
-  Future<InputImage?> _getImageFile(String imagePath) async {
-    File file = await getImageFileFromAssets(imagePath);
-    if (!file.existsSync()) return null;
-    return InputImage.fromFile(file);
+  void _saveFaceDetected({ required Face face}) async {
+    imglib.Image? image =
+    imglib.decodeJpg((await _getImageFileFromAssets(Assets.imgDescarga)).readAsBytesSync());
+
+    _faceCompareService.isTheSameFace(image: image!, face1: face, face2: face);
   }
 
-  Future<File> getImageFileFromAssets(String path) async {
-    final byteData = await rootBundle.load(path);
 
-    final file = File('${(await getTemporaryDirectory()).path}/$path');
-    await file.create(recursive: true);
-    await file
-        .writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+//Image File
+Future<InputImage?> _getImageFile(String imagePath) async {
+  File file = await _getImageFileFromAssets(imagePath);
+  if (!file.existsSync()) return null;
+  return InputImage.fromFile(file);
+}
 
-    return file;
-  }
+Future<File> _getImageFileFromAssets(String path) async {
+  final byteData = await rootBundle.load(path);
+
+  final file = File('${(await getTemporaryDirectory()).path}/$path');
+  await file.create(recursive: true);
+  await file
+      .writeAsBytes(byteData.buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes));
+
+  return file;
+}
+
 }

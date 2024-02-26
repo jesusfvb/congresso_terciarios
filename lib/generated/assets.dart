@@ -4,6 +4,7 @@ class Assets {
 
   static const String iaLabelmap = 'assets/ia/labelmap.txt';
   static const String iaMobileFaceNet = 'assets/ia/mobile_face_net.tflite';
+  static const String iaMobilefacenet = 'assets/ia/mobilefacenet.tflite';
   static const String imgDescarga = 'assets/img/descarga.jpeg';
   static const String imgImg1 = 'assets/img/img_1.jpg';
   static const String soundCorrect = 'assets/sound/correct.mp3';
