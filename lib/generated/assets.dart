@@ -7,6 +7,7 @@ class Assets {
   static const String iaMobilefacenet = 'assets/ia/mobilefacenet.tflite';
   static const String imgDescarga = 'assets/img/descarga.jpeg';
   static const String imgImg1 = 'assets/img/img_1.jpg';
+  static const String imgImg2 = 'assets/img/img2.jpg';
   static const String soundCorrect = 'assets/sound/correct.mp3';
   static const String soundError = 'assets/sound/error.mp3';
 

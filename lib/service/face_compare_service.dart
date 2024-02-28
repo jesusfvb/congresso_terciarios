@@ -1,57 +1,19 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:camera/camera.dart';
 import 'package:congresso_terciarios/generated/assets.dart';
+import 'package:congresso_terciarios/service/face_detected_service.dart';
 import 'package:get/get.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart' as imglib;
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 class FaceCompareService {
-  late Interpreter interpreter;
-  List? predictedArray;
+  late Interpreter _interpreter;
 
-  void isTheSameFace(
-      {required Face face1, required Face face2, required imglib.Image image}) async {
-    await initializeInterpreter();
-
-    List input1 = _preProcess(image, face1);
-    input1 = input1.reshape([1, 112, 112, 3]);
-    List output1 = List.generate(1, (index) => List.filled(192, 0));
-    interpreter.run(input1, output1);
-    output1 = output1.reshape([192]);
-
-    List input2 = _preProcess(image, face1);
-    input2 = input2.reshape([1, 112, 112, 3]);
-    List output2 = List.generate(1, (index) => List.filled(192, 0));
-    interpreter.run(input1, output2);
-    output2 = output2.reshape([192]);
-
-    int minDist = 999;
-    double threshold = 1.5;
-    var dist = euclideanDistance(List.from(output1), List.from(output2));
-    if (dist <= threshold && dist < minDist) {
-      print("*****************************************************");
-      print("true");
-      print("*****************************************************");
-    } else {
-      print("*****************************************************");
-      print("false");
-      print("*****************************************************");
-    }
-  }
-
-  euclideanDistance(List l1, List l2) {
-    double sum = 0;
-    for (int i = 0; i < l1.length; i++) {
-      sum += pow((l1[i] - l2[i]), 2);
-    }
-
-    return pow(sum, 0.5);
-  }
-
-  initializeInterpreter() async {
+  Future<void> _init() async {
     Delegate? delegate;
     try {
       if (GetPlatform.isAndroid) {
@@ -71,36 +33,64 @@ class FaceCompareService {
       }
       var interpreterOptions = InterpreterOptions()..addDelegate(delegate!);
 
-      interpreter =
-          await Interpreter.fromAsset("ia/mobilefacenet.tflite", options: interpreterOptions);
+      _interpreter =
+          await Interpreter.fromAsset(Assets.iaMobileFaceNet.replaceFirst("assets/", ""), options: interpreterOptions);
     } catch (e) {
       print('Failed to load model.');
       print(e);
     }
   }
 
+  Future<void> compare({required FaceDetected face1, required FaceDetected face2}) async {
+    var output1 = await _process(faceDetected: face1);
+    var output2 = await _process(faceDetected: face2);
+
+    int minDist = 999;
+    double threshold = 1.0;
+    num currDist = _euclideanDistance(output1, output2);
+
+    print("*****************************************************");
+    print("Euclidean distance");
+    print(currDist );
+    print("*****************************************************");
+
+    if (currDist <= threshold && currDist < minDist) {
+      print("*****************************************************");
+      print("true");
+      print("*****************************************************");
+    } else {
+      print("*****************************************************");
+      print("false");
+      print("*****************************************************");
+    }
+  }
+
+  Future<List> _process({required FaceDetected faceDetected}) async {
+    List input = _preProcess(faceDetected.image, faceDetected.face);
+    input = input.reshape([1, 112, 112, 3]);
+    List output = List.generate(1, (index) => List.filled(192, 0));
+
+    await _init();
+
+    _interpreter.run(input, output);
+    output = output.reshape([192]);
+    return output;
+  }
+
+  double _euclideanDistance(List e1, List e2) {
+    double sum = 0.0;
+    for (int i = 0; i < e1.length; i++) {
+      sum += pow((e1[i] - e2[i]), 2);
+    }
+    return sqrt(sum);
+  }
+
   List _preProcess(imglib.Image image, Face faceDetected) {
-    imglib.Image croppedImage = _cropFace(image, faceDetected);
+    imglib.Image croppedImage = cropFace(image, faceDetected);
     imglib.Image img = imglib.copyResizeCropSquare(croppedImage, 112);
 
     Float32List imageAsList = _imageToByteListFloat32(img);
     return imageAsList;
-  }
-
-  imglib.Image _cropFace(imglib.Image image, Face faceDetected) {
-    // imglib.Image convertedImage = _convertCameraImage(image);
-    imglib.Image convertedImage = image;
-    double x = faceDetected.boundingBox.left - 10.0;
-    double y = faceDetected.boundingBox.top - 10.0;
-    double w = faceDetected.boundingBox.width + 10.0;
-    double h = faceDetected.boundingBox.height + 10.0;
-    return imglib.copyCrop(convertedImage, x.round(), y.round(), w.round(), h.round());
-  }
-
-  imglib.Image _convertCameraImage(CameraImage image) {
-    var img = convertToImage(image);
-    var img1 = imglib.copyRotate(img!, -90);
-    return img1;
   }
 
   Float32List _imageToByteListFloat32(imglib.Image image) {
@@ -120,49 +110,12 @@ class FaceCompareService {
   }
 }
 
-imglib.Image? convertToImage(CameraImage image) {
-  try {
-    if (image.format.group == ImageFormatGroup.yuv420) {
-      return _convertYUV420(image);
-    } else if (image.format.group == ImageFormatGroup.bgra8888) {
-      return _convertBGRA8888(image);
-    }
-    throw Exception('Image format not supported');
-  } catch (e) {
-    print("ERROR:" + e.toString());
-  }
-  return null;
-}
-
-imglib.Image _convertBGRA8888(CameraImage image) {
-  return imglib.Image.fromBytes(
-    image.width,
-    image.height,
-    image.planes[0].bytes,
-    format: imglib.Format.bgra,
-  );
-}
-
-imglib.Image _convertYUV420(CameraImage image) {
-  int width = image.width;
-  int height = image.height;
-  var img = imglib.Image(width, height);
-  const int hexFF = 0xFF000000;
-  final int uvyButtonStride = image.planes[1].bytesPerRow;
-  final int? uvPixelStride = image.planes[1].bytesPerPixel;
-  for (int x = 0; x < width; x++) {
-    for (int y = 0; y < height; y++) {
-      final int uvIndex = uvPixelStride! * (x / 2).floor() + uvyButtonStride * (y / 2).floor();
-      final int index = y * width + x;
-      final yp = image.planes[0].bytes[index];
-      final up = image.planes[1].bytes[uvIndex];
-      final vp = image.planes[2].bytes[uvIndex];
-      int r = (yp + vp * 1436 / 1024 - 179).round().clamp(0, 255);
-      int g = (yp - up * 46549 / 131072 + 44 - vp * 93604 / 131072 + 91).round().clamp(0, 255);
-      int b = (yp + up * 1814 / 1024 - 227).round().clamp(0, 255);
-      img.data[index] = hexFF | (b << 16) | (g << 8) | r;
-    }
-  }
-
-  return img;
+imglib.Image cropFace(imglib.Image image, Face faceDetected) {
+  // imglib.Image convertedImage = _convertCameraImage(image);
+  imglib.Image convertedImage = image;
+  double x = faceDetected.boundingBox.left - 10.0;
+  double y = faceDetected.boundingBox.top - 10.0;
+  double w = faceDetected.boundingBox.width + 10.0;
+  double h = faceDetected.boundingBox.height + 10.0;
+  return imglib.copyCrop(convertedImage, x.round(), y.round(), w.round(), h.round());
 }
