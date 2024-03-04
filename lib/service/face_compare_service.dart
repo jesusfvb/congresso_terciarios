@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:camera/camera.dart';
 import 'package:congresso_terciarios/generated/assets.dart';
 import 'package:congresso_terciarios/service/face_detected_service.dart';
 import 'package:get/get.dart';
